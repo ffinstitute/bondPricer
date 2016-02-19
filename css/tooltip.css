@@ -1,0 +1,27 @@
+div.tooltip {
+  position: absolute;
+  width:250px;
+  color:#fff;
+  padding: 8px;
+  font: 12px sans-serif;
+  background: #111;
+  border: solid 1px #aaa;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+div.tooltip hr{
+  margin-top:4px;margin-bottom:4px;
+}
+
+
+div.tooltip th{
+  font-weight: bold;
+  color:white;
+  font-size: 13px;
+}
+
+div.tooltip td{
+  color:#ddd;
+  font-size: 12px;
+}

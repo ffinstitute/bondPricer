@@ -1,0 +1,21 @@
+
+body {
+  /*shape-rendering: crispEdges;*/
+}
+
+.axis{shape-rendering: crispEdges;}
+
+.crisp{
+	shape-rendering: crispEdges;
+}
+.day {
+  fill: #fff;
+  stroke: #ccc;
+  shape-rendering: crispEdges;
+}
+
+.month {
+  fill: none;
+  stroke: #aaa;
+  stroke-width: 1px;
+}
