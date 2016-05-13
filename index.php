@@ -1,6 +1,8 @@
 <html>
 <head>
 <!-- Pricer -->
+<!-- JQuery -->
+<script src="js/jquery-1.11.2.min.js"></script>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
@@ -18,9 +20,6 @@
 
 <!-- Tooltip -->
 <link rel="stylesheet" href="css/tooltip.css">
-
-<!-- JQuery -->
-<script src="js/jquery-1.11.2.min.js"></script>
 
 <!-- D3JS -->
 <script src="js/d3.min.js"></script>
