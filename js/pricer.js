@@ -8,7 +8,7 @@ var scoreDomain = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 var colorDomain = d3.scale.linear().domain(scoreDomain).range(colors);
 var greyScale = d3.scale.linear().domain([0, 100]).range(['#666', '#eee']);//video completion
 
-var pvis = d3.select("#graphDiv").append("svg").attr("width", 900).attr("height", 200);
+//var pvis = d3.select("#graphDiv").append("svg").attr("width", 900).attr("height", 200);
 
 //// Video
 //pvis.append("text").attr("class", "txt").attr("x", 60).attr("y", 75).text("Text").attr("fill", "#999")
@@ -35,7 +35,6 @@ var pricer = function () {
         var marketRate = +$('#d').val();// D4 - 5%
         var delta = +$('#e').val();// G4 - 0 to 0.3%
 
-
         console.info(redeem, maturity, coupon, marketRate, delta);
 
         //controls
@@ -51,9 +50,13 @@ var pricer = function () {
             price: [0, 0, 0],
             duration: [0, 0, 0],
             impliedPrice: [0, 0, 0],
-            deltaPrice: [0, 0, 0]
+            deltaPrice: [0, 0, 0],
+            priceFull: {}
         }
 
+        // Compute for graph
+        var dfFull = {},
+            priceFull = {};
 
         for (var i = 0; i < maturity; i++) {
             var j = i + 1;
@@ -62,20 +65,29 @@ var pricer = function () {
             var nominal = 1 / Math.pow((1 + (marketRate / 100)), j);
             var plus = 1 / Math.pow((1 + ((marketRate + delta) / 100)), j);//1/((1+((marketRate+delta)/100))*j);
             out.df[i] = [minus, nominal, plus];
+            dfFull[i] = computeFullDF(marketRate, delta, j);
         }
+
+
         out.flux[(maturity - 1)] = coupon + redeem;
 
         //compute prices//
-        var price0 = 0;
+        var price0 = 0, tmp;
         price1 = 0;
         price2 = 0;
         for (var i = 0; i < maturity; i++) {
             price0 += (out.flux[i]) * out.df[i][0];
             price1 += (out.flux[i]) * out.df[i][1];
             price2 += (out.flux[i]) * out.df[i][2];
+
+            for (var key in dfFull[i]) {
+                tmp = out.flux[i] * dfFull[i][key];
+                priceFull[key] = priceFull.hasOwnProperty(key) ? (tmp + priceFull[key]) : tmp;
+            }
         }
 
         out.price = [price0, price1, price2];
+        out.priceFull = dic2list(priceFull);
 
         //compute duration
         var d0 = 0;
@@ -96,6 +108,26 @@ var pricer = function () {
 
         //ktksbye
         return out;
+    }
+
+    function computeFullDF(marketRate, delta, year) {
+        var marketRateB, result = {};
+        for (d = -delta; d <= delta; d += 0.001) {
+            marketRateB = marketRate + Math.round(d * 1e3) / 1e3;
+            result[marketRateB] = 1 / Math.pow((1 + ((marketRateB) / 100)), year);
+        }
+        return result
+    }
+
+    function dic2list(dic) {
+        var list = [];
+        for (var key in dic) {
+            list.push({
+                'x': key,
+                'y': dic[key].toFixed(2)
+            });
+        }
+        return list
     }
 
 
@@ -138,6 +170,8 @@ $(function () {
 
         out = pricer.compute();
         console.log('change', out);
+
+        drawGraph(out.priceFull);
 
         /**
          * Round value with 2 digits precision
@@ -209,5 +243,73 @@ $(function () {
     }
 
     refresh();
+
+    function drawGraph(data) {
+        console.log(data);
+        // define dimensions of graph
+        var margin = 50; //px
+        var w = $('#graphDiv').width() - margin * 2; // width
+        var h = 400 - margin * 2; // height
+        var graph;
+
+        // create a line function that can convert data[] into x and y points
+        var lineFunc = d3.svg.line()
+            // assign the X function to plot our line as we wish
+            .x(function (d) {
+                // return the X coordinate where we want to plot this datapoint
+                return xScale(d.x);
+            })
+            .y(function (d) {
+                // return the Y coordinate where we want to plot this datapoint
+                return yScale(d.y);
+            })
+            .interpolate("monotone");
+
+
+        // Fit scale with data
+        var xScale = d3.scale.linear().domain([0, getMax(data, 'x')]).range([0, w]);
+        var yScale = d3.scale.linear().domain([0, getMax(data, 'y')]).range([h, 0]);
+        // create axises
+        var xAxis = d3.svg.axis().scale(xScale).ticks(data.length).orient("bottom"); //tickSubdivide(true);
+        var yAxis = d3.svg.axis().scale(yScale).ticks(4).orient("left");
+
+        if ($("#graphDiv svg").length == 0) {
+            // Add an SVG element with the desired dimensions and margin.
+            graph = d3.select("#graphDiv").append("svg:svg")
+                .attr("width", w + margin * 2)
+                .attr("height", h + margin * 2)
+                .append("svg:g")
+                .attr("transform", "translate(50,50)");
+
+            // Add x, y axises
+            graph.append("svg:g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + h + ")")
+                .call(xAxis);
+            graph.append("svg:g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(0,0)")
+                .call(yAxis);
+
+            // Add curve
+            graph.append("svg:path").attr("class", "line1").attr("d", lineFunc(data));
+        } else {
+            graph = d3.select("#graphDiv").transition();
+            graph.select('.line1').attr("d", lineFunc(data));
+            graph.select(".x.axis").call(xAxis);
+            graph.select(".y.axis").call(yAxis);
+        }
+
+        // Add the line by appending an svg:path element with the data line we created above
+        // do this AFTER the axes above so that the line is above the tick-lines
+        function getMax(data, key) {
+            var max = 0;
+            $(data).each(function () {
+                max = (this[key] > max) ? this[key] : max;
+            });
+            return max
+        }
+
+    }
 
 });
