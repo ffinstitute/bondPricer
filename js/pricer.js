@@ -10,13 +10,13 @@ var greyScale = d3.scale.linear().domain([0, 100]).range(['#666', '#eee']);//vid
 
 var pvis = d3.select("#graphDiv").append("svg").attr("width", 900).attr("height", 200);
 
-// Video
-pvis.append("text").attr("class", "txt").attr("x", 60).attr("y", 75).text("Text").attr("fill", "#999")
-    .style("font-size", "10px").style("text-anchor", "middle");
-
-// Problems
-pvis.append("text").attr("class", "txt").attr("x", 125).attr("y", 28).text("Text").attr("fill", "#999")
-    .style("font-size", "10px").style("text-anchor", "middle");
+//// Video
+//pvis.append("text").attr("class", "txt").attr("x", 60).attr("y", 75).text("Text").attr("fill", "#999")
+//    .style("font-size", "10px").style("text-anchor", "middle");
+//
+//// Problems
+//pvis.append("text").attr("class", "txt").attr("x", 125).attr("y", 28).text("Text").attr("fill", "#999")
+//    .style("font-size", "10px").style("text-anchor", "middle");
 
 
 var data = [];
