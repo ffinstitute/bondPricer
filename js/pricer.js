@@ -289,14 +289,17 @@ $(function () {
                 (parseFloat(getMin(data0.concat(data1), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'x')) + 0.251).toFixed(2)
             ])
             .range([0, w]);
-
         var yScale = d3.scale.linear()
             .domain([
                 (parseFloat(getMin(data0.concat(data1), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'y')) + 1.1).toFixed(2)])
             .range([h, 0]);
+
         // create axises
-        var xAxis = d3.svg.axis().scale(xScale).ticks(7).orient("bottom"); //tickSubdivide(true);
+        var xAxis = d3.svg.axis().scale(xScale).ticks(7).orient("bottom");
         var yAxis = d3.svg.axis().scale(yScale).ticks(10).orient("left");
+
+        var zoom = d3.behavior.zoom().x(xScale).y(yScale)
+            .scaleExtent([1, 100]).on("zoom", redraw);
 
         if ($("#graphDiv svg").length == 0) {
             // Add an SVG element with the desired dimensions and margin.
@@ -304,7 +307,9 @@ $(function () {
                 .attr("width", w + margin * 2)
                 .attr("height", h + margin * 2)
                 .append("svg:g")
-                .attr("transform", "translate(50,50)");
+                .attr("transform", "translate(50,50)")
+                .attr('class', 'container')
+                .attr('fill-rule', 'nonzero');
 
             // Add x, y axises
             graph.append("svg:g")
@@ -318,38 +323,62 @@ $(function () {
             graph.append("svg:g")
                 .attr("class", "lines")
                 .attr("transform", "translate(0,0)")
+                .attr("width", w)
+                .attr("height", h)
                 .attr("pointer-events", "all")
-                .call(d3.behavior.zoom().on("zoom", redraw));
+                .attr("clip-path", "url(#clip)");
+
+            graph.append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", w)
+                .attr("height", h);
+
+            graph.append("svg:rect")
+                .attr("class", "pane")
+                .attr("width", w)
+                .attr("height", h)
+                .attr("fill-opacity", 0)
+                .call(zoom);
 
             // Add curve
-            graph.select('g.lines').append("svg:path").attr("class", "line1").attr("d", lineFunc(data0)).attr('vector-effect',"non-scaling-stroke");
-            graph.select('g.lines').append("svg:path").attr("class", "line2").attr("d", lineFunc(data1)).attr('vector-effect',"non-scaling-stroke");
+            graph.select('g.lines').append("svg:path").attr("class", "line1 line").attr("d", lineFunc(data0)).attr('vector-effect', "non-scaling-stroke");
+            graph.select('g.lines').append("svg:path").attr("class", "line2 line").attr("d", lineFunc(data1)).attr('vector-effect', "non-scaling-stroke");
 
             // Add lines
             graph.select('g.lines').append("svg:line")
-                .attr("y1", h).attr("y2", yScale(out.price[1])).attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]))
-                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'x1').attr('stroke-dasharray', '5, 5')
-                .attr('vector-effect',"non-scaling-stroke");
+                .attr("y1", yScale(0)).attr("y2", yScale(out.price[1])).attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]))
+                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'x1 line').attr('stroke-dasharray', '10, 5')
+                .attr('vector-effect', "non-scaling-stroke");
             graph.select('g.lines').append("svg:line")
-                .attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1])).attr("x1", 0).attr("x2", xScale(out.rate[1]))
-                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'y1').attr('stroke-dasharray', '5, 5')
-                .attr('vector-effect',"non-scaling-stroke");
+                .attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1])).attr("x1", xScale(0)).attr("x2", xScale(out.rate[1]))
+                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'y1 line').attr('stroke-dasharray', '10, 5')
+                .attr('vector-effect', "non-scaling-stroke");
         } else {
-            graph = d3.select("#graphDiv").transition();
+            graph = d3.select("#graphDiv").transition().duration(1000);
+            redraw(true);
             graph.select('path.line1').attr("d", lineFunc(data0));
             graph.select('path.line2').attr("d", lineFunc(data1));
-            graph.select(".x.axis").call(xAxis);
-            graph.select(".y.axis").call(yAxis);
-            graph.select("line.x1").attr("y1", h).attr("y2", yScale(out.price[1]))
+            graph.select("line.x1").attr("y2", yScale(out.price[1]))
                 .attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]));
             graph.select("line.y1").attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1]))
-                .attr("x1", 0).attr("x2", xScale(out.rate[1]));
+                .attr("x2", xScale(out.rate[1]));
         }
 
-        function redraw(){
-            graph.select('g.lines').attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
-            graph.select(".x.axis").call(xAxis);
-            graph.select(".y.axis").call(yAxis);
+        function redraw(reset) {
+            if (reset) {
+                zoom.scale(1).translate([0, 0]);
+                zoom.event($('rect.pane'));
+                zoom.x(xScale).y(yScale);
+
+            } else {
+                graph.selectAll('.line').attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+                graph.select(".x.axis").call(xAxis);
+                graph.select(".y.axis").call(yAxis);
+            }
+
         }
 
         // Add the line by appending an svg:path element with the data line we created above
