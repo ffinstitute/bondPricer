@@ -51,7 +51,8 @@ var pricer = function () {
             duration: [0, 0, 0],
             impliedPrice: [0, 0, 0],
             deltaPrice: [0, 0, 0],
-            priceFull: {}
+            priceFull: {},
+            line2: {}
         }
 
         // Compute for graph
@@ -105,6 +106,14 @@ var pricer = function () {
         out.impliedPrice = [price1 + d1 / price1 * delta, price1, price1 - d1 / price1 * delta];
         //delta price
         out.deltaPrice = [out.impliedPrice[0] - price0, out.impliedPrice[1] - price1, out.impliedPrice[2] - price2];
+
+        // compute line2 for graph
+        out.line2 = $(out.priceFull).map(function () {
+            return {
+                'x': this.x,
+                'y': (out.rate[1] - parseFloat(this.x)) * out.duration[1] + out.price[1]
+            }
+        }).toArray();
 
         //ktksbye
         return out;
@@ -178,7 +187,7 @@ $(function () {
         out = pricer.compute();
         console.log('change', out);
 
-        drawGraph(out.priceFull);
+        drawGraph(out);
 
         /**
          * Round value with 2 digits precision
@@ -249,8 +258,9 @@ $(function () {
 
     refresh();
 
-    function drawGraph(data) {
-        console.log(data);
+    function drawGraph(out) {
+        var data0 = out.priceFull;
+        var data1 = out.line2;
         // define dimensions of graph
         var margin = 50; //px
         var w = $('#graphDiv').width() - margin * 2; // width
@@ -274,16 +284,16 @@ $(function () {
         // Fit scale with data
         var xScale = d3.scale.linear()
             .domain([
-                (parseFloat(getMin(data, 'x')) - 0.021).toFixed(2), (parseFloat(getMax(data, 'x')) + 0.021).toFixed(2)
+                (parseFloat(getMin(data0.concat(data1), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'x')) + 0.251).toFixed(2)
             ])
             .range([0, w]);
 
         var yScale = d3.scale.linear()
             .domain([
-                (parseFloat(getMin(data, 'y')) - 0.101).toFixed(2), (parseFloat(getMax(data, 'y')) + 0.101).toFixed(2)])
+                (parseFloat(getMin(data0.concat(data1), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'y')) + 1.1).toFixed(2)])
             .range([h, 0]);
         // create axises
-        var xAxis = d3.svg.axis().scale(xScale).ticks(5).orient("bottom"); //tickSubdivide(true);
+        var xAxis = d3.svg.axis().scale(xScale).ticks(7).orient("bottom"); //tickSubdivide(true);
         var yAxis = d3.svg.axis().scale(yScale).ticks(10).orient("left");
 
         if ($("#graphDiv svg").length == 0) {
@@ -303,14 +313,31 @@ $(function () {
                 .attr("class", "y axis")
                 .attr("transform", "translate(0,0)")
                 .call(yAxis);
+            graph.append("svg:g")
+                .attr("class", "lines")
+                .attr("transform", "translate(0,0)");
 
             // Add curve
-            graph.append("svg:path").attr("class", "line1").attr("d", lineFunc(data));
+            graph.select('g.lines').append("svg:path").attr("class", "line1").attr("d", lineFunc(data0));
+            graph.select('g.lines').append("svg:path").attr("class", "line2").attr("d", lineFunc(data1));
+
+            // Add lines
+            graph.select('g.lines').append("svg:line")
+                .attr("y1", h).attr("y2", yScale(out.price[1])).attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]))
+                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'x1').attr('stroke-dasharray','5, 5');
+            graph.select('g.lines').append("svg:line")
+                .attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1])).attr("x1", 0).attr("x2", xScale(out.rate[1]))
+                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'y1').attr('stroke-dasharray','5, 5');
         } else {
             graph = d3.select("#graphDiv").transition();
-            graph.select('.line1').attr("d", lineFunc(data));
+            graph.select('path.line1').attr("d", lineFunc(data0));
+            graph.select('path.line2').attr("d", lineFunc(data1));
             graph.select(".x.axis").call(xAxis);
             graph.select(".y.axis").call(yAxis);
+            graph.select("line.x1").attr("y1", h).attr("y2", yScale(out.price[1]))
+                .attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]));
+            graph.select("line.y1").attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1]))
+                .attr("x1", 0).attr("x2", xScale(out.rate[1]));
         }
 
         // Add the line by appending an svg:path element with the data line we created above
