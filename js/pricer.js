@@ -123,6 +123,7 @@ var pricer = function () {
         var marketRateB, result = {};
         var d = -delta;
         while (d <= delta) {
+            d = (marketRate + d) < 0 ? -marketRate : d;
             marketRateB = marketRate + d;
             result[marketRateB] = Math.round((1 / Math.pow((1 + ((marketRateB) / 100)), year)) * 1e6) / 1e6;
             d = Math.round((d + 0.001) * 1e3) / 1e3;
@@ -139,8 +140,9 @@ var pricer = function () {
             });
         }
         list.sort(function (a, b) {
-            if (a.x < b.x) return -1;
-            else if (a.x > b.x) return 1;
+            var delta = parseFloat(a.x) - parseFloat(b.x);
+            if (delta < 0) return -1;
+            else if (delta > 0) return 1;
             else return 0;
         });
         return list
@@ -176,9 +178,9 @@ $(function () {
 
         //Delta : 0 to 0,30%
         $('#e').val(+$('#e').val());//force num
-        if ($('#e').val() < 0)$('#e').val(0);
-        if ($('#e').val() > 0.3)$('#e').val('0.30');
-
+        if ($('#e').val() < 0) $('#e').val(0);
+        if ($('#e').val() > 1.5) $('#e').val('1.50');
+        if ($('#e').val() > parseFloat($('#d').val())) $('#e').val($('#d').val());
         refresh();
     });
 
@@ -315,19 +317,23 @@ $(function () {
                 .call(yAxis);
             graph.append("svg:g")
                 .attr("class", "lines")
-                .attr("transform", "translate(0,0)");
+                .attr("transform", "translate(0,0)")
+                .attr("pointer-events", "all")
+                .call(d3.behavior.zoom().on("zoom", redraw));
 
             // Add curve
-            graph.select('g.lines').append("svg:path").attr("class", "line1").attr("d", lineFunc(data0));
-            graph.select('g.lines').append("svg:path").attr("class", "line2").attr("d", lineFunc(data1));
+            graph.select('g.lines').append("svg:path").attr("class", "line1").attr("d", lineFunc(data0)).attr('vector-effect',"non-scaling-stroke");
+            graph.select('g.lines').append("svg:path").attr("class", "line2").attr("d", lineFunc(data1)).attr('vector-effect',"non-scaling-stroke");
 
             // Add lines
             graph.select('g.lines').append("svg:line")
                 .attr("y1", h).attr("y2", yScale(out.price[1])).attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]))
-                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'x1').attr('stroke-dasharray','5, 5');
+                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'x1').attr('stroke-dasharray', '5, 5')
+                .attr('vector-effect',"non-scaling-stroke");
             graph.select('g.lines').append("svg:line")
                 .attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1])).attr("x1", 0).attr("x2", xScale(out.rate[1]))
-                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'y1').attr('stroke-dasharray','5, 5');
+                .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'y1').attr('stroke-dasharray', '5, 5')
+                .attr('vector-effect',"non-scaling-stroke");
         } else {
             graph = d3.select("#graphDiv").transition();
             graph.select('path.line1').attr("d", lineFunc(data0));
@@ -338,6 +344,12 @@ $(function () {
                 .attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]));
             graph.select("line.y1").attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1]))
                 .attr("x1", 0).attr("x2", xScale(out.rate[1]));
+        }
+
+        function redraw(){
+            graph.select('g.lines').attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+            graph.select(".x.axis").call(xAxis);
+            graph.select(".y.axis").call(yAxis);
         }
 
         // Add the line by appending an svg:path element with the data line we created above
