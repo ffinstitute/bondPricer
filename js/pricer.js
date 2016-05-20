@@ -65,7 +65,7 @@ var pricer = function () {
             var nominal = 1 / Math.pow((1 + (marketRate / 100)), j);
             var plus = 1 / Math.pow((1 + ((marketRate + delta) / 100)), j);//1/((1+((marketRate+delta)/100))*j);
             out.df[i] = [minus, nominal, plus];
-            dfFull[i] = computeFullDF(marketRate, delta, j);
+            dfFull[i] = computeFullDF(marketRate, 1.5, j);
         }
 
 
@@ -274,16 +274,16 @@ $(function () {
         // Fit scale with data
         var xScale = d3.scale.linear()
             .domain([
-                (parseFloat(getMin(data, 'x')) - 0.02).toFixed(2), (parseFloat(getMax(data, 'x')) + 0.02).toFixed(2)
+                (parseFloat(getMin(data, 'x')) - 0.021).toFixed(2), (parseFloat(getMax(data, 'x')) + 0.021).toFixed(2)
             ])
             .range([0, w]);
 
         var yScale = d3.scale.linear()
             .domain([
-                (parseFloat(getMin(data, 'y')) - 0.1).toFixed(2), (parseFloat(getMax(data, 'y')) + 0.1).toFixed(2)])
+                (parseFloat(getMin(data, 'y')) - 0.101).toFixed(2), (parseFloat(getMax(data, 'y')) + 0.101).toFixed(2)])
             .range([h, 0]);
         // create axises
-        var xAxis = d3.svg.axis().scale(xScale).ticks(10).orient("bottom"); //tickSubdivide(true);
+        var xAxis = d3.svg.axis().scale(xScale).ticks(5).orient("bottom"); //tickSubdivide(true);
         var yAxis = d3.svg.axis().scale(yScale).ticks(10).orient("left");
 
         if ($("#graphDiv svg").length == 0) {
@@ -318,7 +318,7 @@ $(function () {
         function getMax(data, key) {
             var max = 0;
             $(data).each(function () {
-                max = (this[key] > max) ? this[key] : max;
+                max = (parseFloat(this[key]) > parseFloat(max)) ? this[key] : max;
             });
             return max
         }
@@ -326,7 +326,7 @@ $(function () {
         function getMin(data, key) {
             var min = -1;
             $(data).each(function () {
-                min = (this[key] < min) ? this[key] : (min > -1 ? min : this[key]);
+                min = (parseFloat(this[key]) < parseFloat(min)) ? this[key] : (min > -1 ? min : this[key]);
             });
             return min
         }
