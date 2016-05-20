@@ -112,9 +112,11 @@ var pricer = function () {
 
     function computeFullDF(marketRate, delta, year) {
         var marketRateB, result = {};
-        for (d = -delta; d <= delta; d += 0.001) {
-            marketRateB = marketRate + Math.round(d * 1e3) / 1e3;
-            result[marketRateB] = 1 / Math.pow((1 + ((marketRateB) / 100)), year);
+        var d = -delta;
+        while (d <= delta) {
+            marketRateB = marketRate + d;
+            result[marketRateB] = Math.round((1 / Math.pow((1 + ((marketRateB) / 100)), year)) * 1e6) / 1e6;
+            d = Math.round((d + 0.001) * 1e3) / 1e3;
         }
         return result
     }
@@ -124,9 +126,14 @@ var pricer = function () {
         for (var key in dic) {
             list.push({
                 'x': key,
-                'y': dic[key].toFixed(2)
+                'y': dic[key].toFixed(4)
             });
         }
+        list.sort(function (a, b) {
+            if (a.x < b.x) return -1;
+            else if (a.x > b.x) return 1;
+            else return 0;
+        });
         return list
     }
 
@@ -176,21 +183,19 @@ $(function () {
         /**
          * Round value with 2 digits precision
          * @param  {[type]} n [description]
-         * @return {[type]}   [description]
+         * @return {number}   [description]
          */
         var round2 = function (n) {
-            n *= 100;
-            return Math.round(n) / 100;
+            return Math.round(n * 1e2) / 1e2;
         }
 
         /**
          * Round value with 4 digits precision
          * @param  {[type]} n [description]
-         * @return {[type]}   [description]
+         * @return {number}   [description]
          */
         var round4 = function (n) {
-            n *= 10000;
-            return Math.round(n) / 10000;
+            return Math.round(n * 1e4) / 1e4;
         }
 
         //Show DF details
@@ -263,15 +268,23 @@ $(function () {
                 // return the Y coordinate where we want to plot this datapoint
                 return yScale(d.y);
             })
-            .interpolate("monotone");
+            .interpolate("basis");
 
 
         // Fit scale with data
-        var xScale = d3.scale.linear().domain([0, getMax(data, 'x')]).range([0, w]);
-        var yScale = d3.scale.linear().domain([0, getMax(data, 'y')]).range([h, 0]);
+        var xScale = d3.scale.linear()
+            .domain([
+                (parseFloat(getMin(data, 'x')) - 0.02).toFixed(2), (parseFloat(getMax(data, 'x')) + 0.02).toFixed(2)
+            ])
+            .range([0, w]);
+
+        var yScale = d3.scale.linear()
+            .domain([
+                (parseFloat(getMin(data, 'y')) - 0.1).toFixed(2), (parseFloat(getMax(data, 'y')) + 0.1).toFixed(2)])
+            .range([h, 0]);
         // create axises
-        var xAxis = d3.svg.axis().scale(xScale).ticks(data.length).orient("bottom"); //tickSubdivide(true);
-        var yAxis = d3.svg.axis().scale(yScale).ticks(4).orient("left");
+        var xAxis = d3.svg.axis().scale(xScale).ticks(10).orient("bottom"); //tickSubdivide(true);
+        var yAxis = d3.svg.axis().scale(yScale).ticks(10).orient("left");
 
         if ($("#graphDiv svg").length == 0) {
             // Add an SVG element with the desired dimensions and margin.
@@ -308,6 +321,14 @@ $(function () {
                 max = (this[key] > max) ? this[key] : max;
             });
             return max
+        }
+
+        function getMin(data, key) {
+            var min = -1;
+            $(data).each(function () {
+                min = (this[key] < min) ? this[key] : (min > -1 ? min : this[key]);
+            });
+            return min
         }
 
     }
