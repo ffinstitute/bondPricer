@@ -156,6 +156,9 @@ var pricer = function () {
 
 $(function () {
 
+    // Store zoom instance globally to limit one instance existing at max
+    var zoom;
+
     $('#a,#b,#c,#d,#e').on('change', function () {
 
         $('#a').val(+$('#a').val());//force num
@@ -269,39 +272,44 @@ $(function () {
         var h = 400 - margin * 2; // height
         var graph;
 
-        // create a line function that can convert data[] into x and y points
-        var lineFunc = d3.svg.line()
-            // assign the X function to plot our line as we wish
-            .x(function (d) {
-                // return the X coordinate where we want to plot this datapoint
-                return xScale(d.x);
-            })
-            .y(function (d) {
-                // return the Y coordinate where we want to plot this datapoint
-                return yScale(d.y);
-            })
-            .interpolate("basis");
+        var xScale, yScale, xAxis, yAxis, lineFunc;
 
+        function calAxis() {
+            // Fit scale with data
+            xScale = d3.scale.linear()
+                .domain([
+                    (parseFloat(getMin(data0.concat(data1), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'x')) + 0.251).toFixed(2)
+                ])
+                .range([0, w]);
+            yScale = d3.scale.linear()
+                .domain([
+                    (parseFloat(getMin(data0.concat(data1), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'y')) + 1.1).toFixed(2)])
+                .range([h, 0]);
 
-        // Fit scale with data
-        var xScale = d3.scale.linear()
-            .domain([
-                (parseFloat(getMin(data0.concat(data1), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'x')) + 0.251).toFixed(2)
-            ])
-            .range([0, w]);
-        var yScale = d3.scale.linear()
-            .domain([
-                (parseFloat(getMin(data0.concat(data1), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'y')) + 1.1).toFixed(2)])
-            .range([h, 0]);
+            // create/update axises
+            xAxis = d3.svg.axis().scale(xScale).ticks(7).orient("bottom");
+            yAxis = d3.svg.axis().scale(yScale).ticks(10).orient("left");
 
-        // create axises
-        var xAxis = d3.svg.axis().scale(xScale).ticks(7).orient("bottom");
-        var yAxis = d3.svg.axis().scale(yScale).ticks(10).orient("left");
-
-        var zoom = d3.behavior.zoom().x(xScale).y(yScale)
-            .scaleExtent([1, 100]).on("zoom", redraw);
+            // create a line function that can convert data[] into x and y points
+            lineFunc = d3.svg.line()
+                // assign the X function to plot our line as we wish
+                .x(function (d) {
+                    // return the X coordinate where we want to plot this datapoint
+                    return xScale(d.x);
+                })
+                .y(function (d) {
+                    // return the Y coordinate where we want to plot this datapoint
+                    return yScale(d.y);
+                })
+                .interpolate("basis");
+        }
 
         if ($("#graphDiv svg").length == 0) {
+            calAxis();
+            // Create zoom listener
+            zoom = d3.behavior.zoom().x(xScale).y(yScale)
+                .scaleExtent([1, 100]).on("zoom", reScale);
+
             // Add an SVG element with the desired dimensions and margin.
             graph = d3.select("#graphDiv").append("svg:svg")
                 .attr("width", w + margin * 2)
@@ -320,6 +328,7 @@ $(function () {
                 .attr("class", "y axis")
                 .attr("transform", "translate(0,0)")
                 .call(yAxis);
+
             graph.append("svg:g")
                 .attr("class", "lines")
                 .attr("transform", "translate(0,0)")
@@ -335,6 +344,7 @@ $(function () {
                 .attr("y", 0)
                 .attr("width", w)
                 .attr("height", h);
+
 
             graph.append("svg:rect")
                 .attr("class", "pane")
@@ -353,32 +363,40 @@ $(function () {
                 .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'x1 line').attr('stroke-dasharray', '10, 5')
                 .attr('vector-effect', "non-scaling-stroke");
             graph.select('g.lines').append("svg:line")
-                .attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1])).attr("x1", xScale(0)).attr("x2", xScale(out.rate[1]))
+                .attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1])).attr("x1", xScale(-3)).attr("x2", xScale(out.rate[1]))
                 .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'y1 line').attr('stroke-dasharray', '10, 5')
                 .attr('vector-effect', "non-scaling-stroke");
         } else {
+            calAxis();
             graph = d3.select("#graphDiv").transition().duration(1000);
-            redraw(true);
+
+            zoom.scale(1).translate([0, 0]).on("zoom", function () {
+                reScale(graph);
+            });
+            zoom.event($('rect.pane'));
+            zoom.x(xScale).y(yScale);
+            zoom.on("zoom", reScale);
             graph.select('path.line1').attr("d", lineFunc(data0));
             graph.select('path.line2').attr("d", lineFunc(data1));
-            graph.select("line.x1").attr("y2", yScale(out.price[1]))
+
+            graph.select("line.x1").attr("y1", yScale(0)).attr("y2", yScale(out.price[1]))
                 .attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]));
             graph.select("line.y1").attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1]))
-                .attr("x2", xScale(out.rate[1]));
+                .attr("x1", xScale(-3)).attr("x2", xScale(out.rate[1]));
         }
 
-        function redraw(reset) {
-            if (reset) {
-                zoom.scale(1).translate([0, 0]);
-                zoom.event($('rect.pane'));
-                zoom.x(xScale).y(yScale);
-
-            } else {
-                graph.selectAll('.line').attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
-                graph.select(".x.axis").call(xAxis);
-                graph.select(".y.axis").call(yAxis);
+        function reScale(that_graph) {
+            if (typeof(that_graph) === "undefined") {
+                that_graph = d3.select("#graphDiv");
             }
+            var limitfiedPan = panLimited(d3.event.translate, d3.event.scale);
+            zoom.translate(limitfiedPan);
+            that_graph.selectAll('.line').attr("transform", "translate(" + limitfiedPan + ") scale(" + d3.event.scale + ")");
+            that_graph.select(".x.axis").call(xAxis);
+            that_graph.select(".y.axis").call(yAxis);
 
+            //console.log(d3.event.translate);
+            //console.log(d3.event.scale);
         }
 
         // Add the line by appending an svg:path element with the data line we created above
@@ -399,6 +417,21 @@ $(function () {
             return min
         }
 
+        function panLimited(translate, scale) {
+            var minX = Number(-w * scale).toFixed(2),
+                maxX = Number(w).toFixed(2),
+                minY = Number(-h * scale).toFixed(2),
+                maxY = Number(h).toFixed(2);
+            var x = (translate[0] < minX) ? minX :
+                    (translate[0] > maxX) ? maxX : translate[0],
+                y = (translate[1] < minY) ? minY :
+                    (translate[1] > maxY) ? maxY : translate[1];
+            return [x, y];
+        }
+
     }
 
 });
+
+
+
