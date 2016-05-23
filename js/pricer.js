@@ -157,7 +157,7 @@ var pricer = function () {
 $(function () {
 
     // Store zoom instance globally to limit one instance existing at max
-    var zoom;
+    var zoom, out;
 
     $('#a,#b,#c,#d,#e').on('change', function () {
 
@@ -187,9 +187,15 @@ $(function () {
         refresh();
     });
 
-    function refresh() {
+    $('button#reset-zoom').click(function(){
+        refresh(true);
+    });
 
-        out = pricer.compute();
+    function refresh(skipCompute) {
+
+        if(!skipCompute) {
+            out = pricer.compute();
+        }
         console.log('change', out);
 
         drawGraph(out);
