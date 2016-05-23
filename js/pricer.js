@@ -187,13 +187,16 @@ $(function () {
         refresh();
     });
 
-    $('button#reset-zoom').click(function(){
+    $('button#reset-zoom').click(function () {
+        refresh(true);
+    });
+    $( window ).resize(function() {
         refresh(true);
     });
 
     function refresh(skipCompute) {
 
-        if(!skipCompute) {
+        if (!skipCompute) {
             out = pricer.compute();
         }
         console.log('change', out);
@@ -292,7 +295,7 @@ $(function () {
                     (parseFloat(getMin(data0.concat(data1), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'y')) + 1.1).toFixed(2)])
                 .range([h, 0]);
 
-            // create/update axises
+            // create/update axes
             xAxis = d3.svg.axis().scale(xScale).ticks(7).orient("bottom");
             yAxis = d3.svg.axis().scale(yScale).ticks(10).orient("left");
 
@@ -325,15 +328,35 @@ $(function () {
                 .attr('class', 'container')
                 .attr('fill-rule', 'nonzero');
 
-            // Add x, y axises
+            // Add x, y axes
             graph.append("svg:g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + h + ")")
+                .attr({
+                    'class': 'x axis',
+                    'transform': 'translate(0,' + h + ')'
+                })
                 .call(xAxis);
+
             graph.append("svg:g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(0,0)")
+                .attr({
+                    'class': 'y axis',
+                    'transform': 'translate(0,0)'
+                })
                 .call(yAxis);
+
+            // Add axise labels
+            graph.append("text")
+                .attr("class", "x label")
+                .attr("text-anchor", "end")
+                .attr("x", w)
+                .attr("y", h - 6)
+                .text("Discount Rate (%)");
+            graph.append("text")
+                .attr("class", "y label")
+                .attr("text-anchor", "end")
+                .attr("y", 6)
+                .attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .text("Price (%)");
 
             graph.append("svg:g")
                 .attr("class", "lines")
@@ -351,7 +374,7 @@ $(function () {
                 .attr("width", w)
                 .attr("height", h);
 
-
+            // Add drag mask
             graph.append("svg:rect")
                 .attr("class", "pane")
                 .attr("width", w)
@@ -359,6 +382,51 @@ $(function () {
                 .attr("fill-opacity", 0)
                 .call(zoom);
 
+            // Add illustration
+            var infoBox = graph.append("svg:g")
+                .attr('class', 'infoBox')
+                .attr("transform", "translate(" + (w - 210) + "," + 10 + ")");
+            infoBox.append('rect')
+                .attr({
+                    stroke: "black",
+                    id: "e1_rectangle",
+                    style: "stroke-width:1px;stroke:#aaa;fill:none;",
+                    width: "200",
+                    height: "100"
+                });
+            infoBox.append('rect').attr({
+                x: "25",
+                y: "20",
+                style: "stroke:none",
+                width: "10",
+                height: "10",
+                fill: "#4682B4",
+                id: "color1"
+            });
+            infoBox.append('rect').attr({
+                x: "25",
+                y: "70",
+                style: "stroke:none",
+                width: "10",
+                height: "10",
+                fill: "#8B0000",
+                id: "color2"
+            });
+
+            infoBox.append('text').attr({
+                    fill: "black", x: "45", y: "30", id: "color1-text", style: "font-family:Arial;font-size:,15px;"
+                })
+                .text('Price');
+
+            infoBox.append('text').attr({
+                fill: "black", x: "45", y: "80", id: "color2-text", style: "font-family:Arial;font-size:,15px;"
+            }).text('Duration Implied Price');
+
+
+            /*
+             <text fill="black" x="58" y="101" id="e4_texte" style="font-family: Arial; font-size: 15px;">Duration Implied Price</text>
+             <text fill="black" x="58" y="54" id="e5_texte" style="font-family: Arial; font-size: 15px;">Price</text>
+             */
             // Add curve
             graph.select('g.lines').append("svg:path").attr("class", "line1 line").attr("d", lineFunc(data0)).attr('vector-effect', "non-scaling-stroke");
             graph.select('g.lines').append("svg:path").attr("class", "line2 line").attr("d", lineFunc(data1)).attr('vector-effect', "non-scaling-stroke");
@@ -382,6 +450,7 @@ $(function () {
             zoom.event($('rect.pane'));
             zoom.x(xScale).y(yScale);
             zoom.on("zoom", reScale);
+
             graph.select('path.line1').attr("d", lineFunc(data0));
             graph.select('path.line2').attr("d", lineFunc(data1));
 
@@ -389,20 +458,29 @@ $(function () {
                 .attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]));
             graph.select("line.y1").attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1]))
                 .attr("x1", xScale(-3)).attr("x2", xScale(out.rate[1]));
+
+            // reposition label texts and hint box
+            graph.select(".x.label")
+                .attr({
+                    "x": w,
+                    "y": h - 6
+                });
+            graph.select('.infoBox').attr("transform", "translate(" + (w - 210) + "," + 10 + ")");
+
+
         }
 
         function reScale(that_graph) {
             if (typeof(that_graph) === "undefined") {
                 that_graph = d3.select("#graphDiv");
             }
+
             var limitfiedPan = panLimited(d3.event.translate, d3.event.scale);
             zoom.translate(limitfiedPan);
             that_graph.selectAll('.line').attr("transform", "translate(" + limitfiedPan + ") scale(" + d3.event.scale + ")");
             that_graph.select(".x.axis").call(xAxis);
             that_graph.select(".y.axis").call(yAxis);
 
-            //console.log(d3.event.translate);
-            //console.log(d3.event.scale);
         }
 
         // Add the line by appending an svg:path element with the data line we created above
