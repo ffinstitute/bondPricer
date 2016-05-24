@@ -392,10 +392,10 @@ $(function () {
                     id: "e1_rectangle",
                     style: "stroke-width:1px;stroke:#aaa;fill:none;",
                     width: "200",
-                    height: "100"
+                    height: "80"
                 });
             infoBox.append('rect').attr({
-                x: "25",
+                x: "20",
                 y: "20",
                 style: "stroke:none",
                 width: "10",
@@ -404,8 +404,8 @@ $(function () {
                 id: "color1"
             });
             infoBox.append('rect').attr({
-                x: "25",
-                y: "70",
+                x: "20",
+                y: "50",
                 style: "stroke:none",
                 width: "10",
                 height: "10",
@@ -419,14 +419,9 @@ $(function () {
                 .text('Price');
 
             infoBox.append('text').attr({
-                fill: "black", x: "45", y: "80", id: "color2-text", style: "font-family:Arial;font-size:,15px;"
+                fill: "black", x: "45", y: "60", id: "color2-text", style: "font-family:Arial;font-size:,15px;"
             }).text('Duration Implied Price');
 
-
-            /*
-             <text fill="black" x="58" y="101" id="e4_texte" style="font-family: Arial; font-size: 15px;">Duration Implied Price</text>
-             <text fill="black" x="58" y="54" id="e5_texte" style="font-family: Arial; font-size: 15px;">Price</text>
-             */
             // Add curve
             graph.select('g.lines').append("svg:path").attr("class", "line1 line").attr("d", lineFunc(data0)).attr('vector-effect', "non-scaling-stroke");
             graph.select('g.lines').append("svg:path").attr("class", "line2 line").attr("d", lineFunc(data1)).attr('vector-effect', "non-scaling-stroke");
