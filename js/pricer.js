@@ -1,34 +1,17 @@
-var tau = 2 * Math.PI; // http://tauday.com/tau-manifesto
-
 //Progress colors (Ailadi scheme)
 var colors = ['#CC0000', '#FF5F06', '#F39224', '#EDC82B', '#E5E131', '#E5E131', '#B9DB50', '#B9DB50', '#8DD685', '#30ad77'];
 
 var scoreDomain = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
-var colorDomain = d3.scale.linear().domain(scoreDomain).range(colors);
-var greyScale = d3.scale.linear().domain([0, 100]).range(['#666', '#eee']);//video completion
-
-//var pvis = d3.select("#graphDiv").append("svg").attr("width", 900).attr("height", 200);
-
-//// Video
-//pvis.append("text").attr("class", "txt").attr("x", 60).attr("y", 75).text("Text").attr("fill", "#999")
-//    .style("font-size", "10px").style("text-anchor", "middle");
-//
-//// Problems
-//pvis.append("text").attr("class", "txt").attr("x", 125).attr("y", 28).text("Text").attr("fill", "#999")
-//    .style("font-size", "10px").style("text-anchor", "middle");
-
+//var colorDomain = d3.scale.linear().domain(scoreDomain).range(colors);
+//var greyScale = d3.scale.linear().domain([0, 100]).range(['#666', '#eee']);//video completion
 
 var data = [];
 
-
 var pricer = function () {
 
-
     function compute() {
-
         // inputs //
-
         var redeem = +$('#a').val();// C2 - 90 to 110%
         var maturity = +$('#b').val();// E2 - 1 to 20 years
         var coupon = +$('#c').val();// G2 - 0 to 20%
@@ -47,42 +30,45 @@ var pricer = function () {
             flux: [],
             df: [],
             rate: [marketRate - delta, marketRate, marketRate + delta],
-            price: [0, 0, 0],
-            duration: [0, 0, 0],
-            impliedPrice: [0, 0, 0],
-            deltaPrice: [0, 0, 0],
+            price: [],
+            duration: [],
+            impliedPrice: [],
+            deltaPrice: [],
+            modifiedDuration: [],
+            MDImpliedPrice: [],
+            MDDeltaPrice: [],
             priceFull: {},
             line2: {}
-        }
+        };
 
         // Compute for graph
         var dfFull = {},
             priceFull = {};
 
-        for (var i = 0; i < maturity; i++) {
-            var j = i + 1;
-            out.flux[i] = coupon;
+        for (var year = 0; year < maturity; year++) {
+            j = year + 1;
+            out.flux[year] = coupon;
             var minus = 1 / Math.pow((1 + ((marketRate - delta) / 100)), j);//1/((1+((marketRate-delta)/100))*j);
             var nominal = 1 / Math.pow((1 + (marketRate / 100)), j);
             var plus = 1 / Math.pow((1 + ((marketRate + delta) / 100)), j);//1/((1+((marketRate+delta)/100))*j);
-            out.df[i] = [minus, nominal, plus];
-            dfFull[i] = computeFullDF(marketRate, 1.5, j);
+            out.df[year] = [minus, nominal, plus];
+            dfFull[year] = computeFullDF(marketRate, 1.5, j);
         }
 
 
         out.flux[(maturity - 1)] = coupon + redeem;
 
         //compute prices//
-        var price0 = 0, tmp;
-        price1 = 0;
-        price2 = 0;
-        for (var i = 0; i < maturity; i++) {
-            price0 += (out.flux[i]) * out.df[i][0];
-            price1 += (out.flux[i]) * out.df[i][1];
-            price2 += (out.flux[i]) * out.df[i][2];
+        var price0 = 0, tmp,
+            price1 = 0,
+            price2 = 0;
+        for (year = 0; year < maturity; year++) {
+            price0 += (out.flux[year]) * out.df[year][0];
+            price1 += (out.flux[year]) * out.df[year][1];
+            price2 += (out.flux[year]) * out.df[year][2];
 
-            for (var key in dfFull[i]) {
-                tmp = out.flux[i] * dfFull[i][key];
+            for (var key in dfFull[year]) {
+                tmp = out.flux[year] * dfFull[year][key];
                 priceFull[key] = priceFull.hasOwnProperty(key) ? (tmp + priceFull[key]) : tmp;
             }
         }
@@ -91,22 +77,31 @@ var pricer = function () {
         out.priceFull = dic2list(priceFull);
 
         //compute duration
-        var d0 = 0;
-        d1 = 0;
-        d2 = 0;
-        for (var i = 0; i < maturity; i++) {
-            var j = i + 1;
-            d0 += (out.flux[i]) * out.df[i][0] * j;
-            d1 += (out.flux[i]) * out.df[i][1] * j;
-            d2 += (out.flux[i]) * out.df[i][2] * j;
+        var d0 = 0,
+            d1 = 0,
+            d2 = 0;
+        for (year = 0; year < maturity; year++) {
+            j = year + 1;
+            d0 += (out.flux[year]) * out.df[year][0] * j;
+            d1 += (out.flux[year]) * out.df[year][1] * j;
+            d2 += (out.flux[year]) * out.df[year][2] * j;
         }
         out.duration = [d0 / price0, d1 / price1, d2 / price2];
+        out.modifiedDuration = [
+            out.duration[0] / (1 + out.rate[0] / 100),
+            out.duration[1] / (1 + out.rate[1] / 100),
+            out.duration[2] / (1 + out.rate[2] / 100)
+        ];
 
         //implied price
         out.impliedPrice = [price1 + d1 / price1 * delta, price1, price1 - d1 / price1 * delta];
+
+        // modified duration implied price
+        out.MDImpliedPrice = [price1 + out.modifiedDuration[1] * delta, price1, price1 - out.modifiedDuration[1] * delta];
+
         //delta price
         out.deltaPrice = [out.impliedPrice[0] - price0, out.impliedPrice[1] - price1, out.impliedPrice[2] - price2];
-
+        out.MDDeltaPrice = [out.MDImpliedPrice[0] - price0, out.MDImpliedPrice[1] - price1, out.MDImpliedPrice[2] - price2];
         // compute line2 for graph
         out.line2 = $(out.priceFull).map(function () {
             return {
@@ -190,7 +185,7 @@ $(function () {
     $('button#reset-zoom').click(function () {
         refresh(true);
     });
-    $( window ).resize(function() {
+    $(window).resize(function () {
         refresh(true);
     });
 
@@ -210,7 +205,7 @@ $(function () {
          */
         var round2 = function (n) {
             return Math.round(n * 1e2) / 1e2;
-        }
+        };
 
         /**
          * Round value with 4 digits precision
@@ -219,54 +214,40 @@ $(function () {
          */
         var round4 = function (n) {
             return Math.round(n * 1e4) / 1e4;
-        }
-
-        //Show DF details
-
-        var htm = [];
-        htm.push("<table class='table table-condensed'>");
-        htm.push("<thead>");
-        htm.push("<th>Year</th>");
-        htm.push("<th style='text-align:right'>Flux</th>");
-        htm.push("<th style='text-align:right'>DF - delta</th>");
-        htm.push("<th style='text-align:right'>DF nominal</th>");
-        htm.push("<th style='text-align:right'>DF + delta</th>");
-        htm.push("</thead>");
-
-        htm.push("<tbody>")
-        for (var i = 0; i < out.flux.length; i++) {
-            htm.push("<tr>");
-            htm.push("<td>" + (i + 1));
-            htm.push("<td style='text-align:right'>" + out.flux[i] + " %");
-            htm.push("<td style='text-align:right'>" + round2(out.df[i][0]));
-            htm.push("<td style='text-align:right'>" + round2(out.df[i][1]));
-            htm.push("<td style='text-align:right'>" + round2(out.df[i][2]));
-        }
-        htm.push("</tbody>");
-        htm.push("</table>");
-
-        //$('#details').html(htm.join(''));
+        };
 
         // Taux actuariel
-        $('#r1').find('td').eq(1).html(out.rate[0] + " %");
-        $('#r1').find('td').eq(2).html(out.rate[1] + " %");
-        $('#r1').find('td').eq(3).html(out.rate[2] + " %");
+        $('#r1').find('td').eq(0).html(out.rate[0] + " %");
+        $('#r1').find('td').eq(1).html(out.rate[1] + " %");
+        $('#r1').find('td').eq(2).html(out.rate[2] + " %");
         // Price
-        $('#r2').find('td').eq(1).html(round2(out.price[0]) + " %");
-        $('#r2').find('td').eq(2).html(round2(out.price[1]) + " %");
-        $('#r2').find('td').eq(3).html(round2(out.price[2]) + " %");
+        $('#r2').find('td').eq(0).html(round2(out.price[0]) + " %");
+        $('#r2').find('td').eq(1).html(round2(out.price[1]) + " %");
+        $('#r2').find('td').eq(2).html(round2(out.price[2]) + " %");
         // Duration
-        $('#r3').find('td').eq(1).html(round4(out.duration[0]));
-        $('#r3').find('td').eq(2).html(round4(out.duration[1]));
-        $('#r3').find('td').eq(3).html(round4(out.duration[2]));
+        $('#r3').find('td').eq(0).html(round4(out.duration[0]));
+        $('#r3').find('td').eq(1).html(round4(out.duration[1]));
+        $('#r3').find('td').eq(2).html(round4(out.duration[2]));
         // Prix induit par duration
-        $('#r4').find('td').eq(1).html(round2(out.impliedPrice[0]) + " %");
-        $('#r4').find('td').eq(2).html(round2(out.impliedPrice[1]) + " %");
-        $('#r4').find('td').eq(3).html(round2(out.impliedPrice[2]) + " %");
+        $('#r4').find('td').eq(0).html(round2(out.impliedPrice[0]) + " %");
+        $('#r4').find('td').eq(1).html(round2(out.impliedPrice[1]) + " %");
+        $('#r4').find('td').eq(2).html(round2(out.impliedPrice[2]) + " %");
         // Delta price
-        $('#r5').find('td').eq(1).html(round4(out.deltaPrice[0]) + " %");
-        $('#r5').find('td').eq(2).html(round4(out.deltaPrice[1]) + " %");
-        $('#r5').find('td').eq(3).html(round4(out.deltaPrice[2]) + " %");
+        $('#r5').find('td').eq(0).html(round4(out.deltaPrice[0]) + " %");
+        $('#r5').find('td').eq(1).html(round4(out.deltaPrice[1]) + " %");
+        $('#r5').find('td').eq(2).html(round4(out.deltaPrice[2]) + " %");
+        // Duration
+        $('#r6').find('td').eq(0).html(round4(out.modifiedDuration[0]));
+        $('#r6').find('td').eq(1).html(round4(out.modifiedDuration[1]));
+        $('#r6').find('td').eq(2).html(round4(out.modifiedDuration[2]));
+        // Prix induit par duration
+        $('#r7').find('td').eq(0).html(round2(out.MDImpliedPrice[0]) + " %");
+        $('#r7').find('td').eq(1).html(round2(out.MDImpliedPrice[1]) + " %");
+        $('#r7').find('td').eq(2).html(round2(out.MDImpliedPrice[2]) + " %");
+        // Delta price
+        $('#r8').find('td').eq(0).html(round4(out.MDDeltaPrice[0]) + " %");
+        $('#r8').find('td').eq(1).html(round4(out.MDDeltaPrice[1]) + " %");
+        $('#r8').find('td').eq(2).html(round4(out.MDDeltaPrice[2]) + " %");
 
     }
 

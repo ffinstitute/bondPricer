@@ -2,7 +2,7 @@
 <head>
     <!-- Pricer -->
     <!-- JQuery -->
-    <script src="js/jquery-1.11.2.min.js"></script>
+    <script src="js/jquery-1.12.4.min.js"></script>
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
           integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -39,11 +39,13 @@
         td {
             font-size: 14px;
         }
+
         path.line1 {
             stroke: steelblue;
             stroke-width: 1;
             fill: none;
         }
+
         path.line2 {
             stroke: darkred;
             stroke-width: 1;
@@ -54,26 +56,39 @@
             shape-rendering: crispEdges;
         }
 
-        .x.axis path,.y.axis path {
+        .x.axis path, .y.axis path {
             fill: none;
             stroke: #000;
         }
 
-        .y.axis line, .x.axis line  {
+        .y.axis line, .x.axis line {
             fill: none;
             stroke: #aaa;
         }
+
         svg .pane {
             cursor: move;
         }
+
         button#reset-zoom {
             float: right;
             margin-right: 5%;
             background: transparent;
 
         }
+
         button:focus {
-            outline:0 !important;
+            outline: 0 !important;
+        }
+
+        tbody td, thead th {
+            text-align: right;
+        }
+        tbody th {
+            font-weight: 500;
+        }
+        .table {
+            font-size: 14px;
         }
     </style>
     <title>Bond pricer</title>
@@ -144,40 +159,64 @@
 
     <hr/>
 
-    <table class='table table-condensed'>
+    <table class='table table-condensed table-striped'>
         <thead>
         <th></th>
-        <th style='text-align:right'>- delta</th>
-        <th style='text-align:right'>nominal</th>
-        <th style='text-align:right'>+ delta</th>
+        <th class="number">- delta</th>
+        <th class="number">nominal</th>
+        <th class="number">+ delta</th>
         </thead>
         <tbody>
         <tr id='r1'>
-            <td>Discount rate
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
+            <th>Discount rate</th>
+            <td class="number">0</td>
+            <td class="number">0</td>
+            <td class="number">0</td>
+        </tr>
         <tr id='r2'>
-            <td>Price (P)
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
+            <th>Price (P)</th>
+            <td class="number">0</td>
+            <td class="number">0</td>
+            <td class="number">0</td>
+        </tr>
         <tr id='r3'>
-            <td>Duration
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
+            <th>Duration</th>
+            <td class="number">0</td>
+            <td class="number">0</td>
+            <td class="number">0</td>
+        </tr>
         <tr id='r4'>
-            <td>Duration implied price (IP)
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
+            <th>Duration implied price (IP)</th>
+            <td class="number">0</td>
+            <td class="number">0</td>
+            <td class="number">0</td>
+        </tr>
         <tr id='r5'>
-            <td>Price difference (IP-P)
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
-            <td style='text-align:right'>0
+            <th>Price difference (IP-P)</th>
+            <td class="number">0</td>
+            <td class="number">0</td>
+            <td class="number">0</td>
+        </tr>
+        <tr id='r6'>
+            <th>Modified Duration</th>
+            <td class="number"></td>
+            <td class="number">0</td>
+            <td class="number"></td>
+        </tr>
+        <tr id='r7'>
+            <th>Modified Duration Implied Price (MDIP)</th>
+            <td class="number">0</td>
+            <td class="number">0</td>
+            <td class="number">0</td>
+        </tr>
+        <tr id='r8'>
+            <th>Price difference (MDIP-P)</th>
+            <td class="number">0</td>
+            <td class="number">0</td>
+            <td class="number">0</td>
+        </tr>
         </tbody>
+
     </table>
 
     <div id='details'></div>
@@ -186,7 +225,8 @@
         <div class='col-xs-12'>
             <h3>Graph</h3>
             <div id='graphDiv'>
-                <button type="button" id="reset-zoom" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i>
+                <button type="button" id="reset-zoom" class="btn btn-default"><i class="fa fa-undo"
+                                                                                 aria-hidden="true"></i>
                     Reset Zoom
                 </button>
             </div>
@@ -194,7 +234,9 @@
     </div>
 
 
-    <p>Reference: <a href="https://docs.google.com/spreadsheets/d/11oRidhRwjw1sxhVGjB6aIrorothsinqyLQxe9Z0laQ0/edit#gid=0">Obligation Calculation Spreadsheet</a></p>
+    <p>Reference: <a
+            href="https://docs.google.com/spreadsheets/d/11oRidhRwjw1sxhVGjB6aIrorothsinqyLQxe9Z0laQ0/edit#gid=0">Obligation
+        Calculation Spreadsheet</a></p>
 
 
     <script src='js/tooltip.js'></script>
