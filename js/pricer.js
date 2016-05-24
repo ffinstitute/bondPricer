@@ -1,11 +1,3 @@
-//Progress colors (Ailadi scheme)
-var colors = ['#CC0000', '#FF5F06', '#F39224', '#EDC82B', '#E5E131', '#E5E131', '#B9DB50', '#B9DB50', '#8DD685', '#30ad77'];
-
-var scoreDomain = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-
-//var colorDomain = d3.scale.linear().domain(scoreDomain).range(colors);
-//var greyScale = d3.scale.linear().domain([0, 100]).range(['#666', '#eee']);//video completion
-
 var data = [];
 
 var pricer = function () {
@@ -38,7 +30,8 @@ var pricer = function () {
             MDImpliedPrice: [],
             MDDeltaPrice: [],
             priceFull: {},
-            line2: {}
+            line2: {},
+            line3: {}
         };
 
         // Compute for graph
@@ -107,6 +100,14 @@ var pricer = function () {
             return {
                 'x': this.x,
                 'y': (out.rate[1] - parseFloat(this.x)) * out.duration[1] + out.price[1]
+            }
+        }).toArray();
+
+        // compute line3 for graph
+        out.line3 = $(out.priceFull).map(function () {
+            return {
+                'x': this.x,
+                'y': (out.rate[1] - parseFloat(this.x)) * out.modifiedDuration[1] + out.price[1]
             }
         }).toArray();
 
@@ -256,6 +257,7 @@ $(function () {
     function drawGraph(out) {
         var data0 = out.priceFull;
         var data1 = out.line2;
+        var data2 = out.line3;
         // define dimensions of graph
         var margin = 50; //px
         var w = $('#graphDiv').width() - margin * 2; // width
@@ -373,39 +375,55 @@ $(function () {
                     id: "e1_rectangle",
                     style: "stroke-width:1px;stroke:#aaa;fill:none;",
                     width: "200",
-                    height: "80"
+                    height: "70"
                 });
             infoBox.append('rect').attr({
-                x: "20",
-                y: "20",
+                x: "10",
+                y: "10",
                 style: "stroke:none",
                 width: "10",
                 height: "10",
-                fill: "#4682B4",
+                fill: "#0057A0",
                 id: "color1"
             });
             infoBox.append('rect').attr({
-                x: "20",
-                y: "50",
+                x: "10",
+                y: "30",
                 style: "stroke:none",
                 width: "10",
                 height: "10",
                 fill: "#8B0000",
                 id: "color2"
             });
+            infoBox.append('rect').attr({
+                x: "10",
+                y: "50",
+                style: "stroke:none",
+                width: "10",
+                height: "10",
+                fill: "#40A500",
+                id: "color3"
+            });
 
             infoBox.append('text').attr({
-                    fill: "black", x: "45", y: "30", id: "color1-text", style: "font-family:Arial;font-size:,15px;"
+                    fill: "black", x: "25", y: "20", id: "color1-text", style: "font-size:12px;"
                 })
                 .text('Price');
 
             infoBox.append('text').attr({
-                fill: "black", x: "45", y: "60", id: "color2-text", style: "font-family:Arial;font-size:,15px;"
-            }).text('Duration Implied Price');
+                    fill: "black", x: "25", y: "40", id: "color2-text", style: "font-size:12px;"
+                })
+                .text('Duration Implied Price');
+
+            infoBox.append('text').attr({
+                    fill: "black", x: "25", y: "60", id: "color2-text", style: "font-size:12px;"
+                })
+                .text('Modified Duration Implied Price');
 
             // Add curve
             graph.select('g.lines').append("svg:path").attr("class", "line1 line").attr("d", lineFunc(data0)).attr('vector-effect', "non-scaling-stroke");
             graph.select('g.lines').append("svg:path").attr("class", "line2 line").attr("d", lineFunc(data1)).attr('vector-effect', "non-scaling-stroke");
+            graph.select('g.lines').append("svg:path").attr("class", "line3 line").attr("d", lineFunc(data2)).attr('vector-effect', "non-scaling-stroke");
 
             // Add lines
             graph.select('g.lines').append("svg:line")
@@ -429,6 +447,8 @@ $(function () {
 
             graph.select('path.line1').attr("d", lineFunc(data0));
             graph.select('path.line2').attr("d", lineFunc(data1));
+            graph.select('path.line3').attr("d", lineFunc(data2));
+
 
             graph.select("line.x1").attr("y1", yScale(0)).attr("y2", yScale(out.price[1]))
                 .attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]));
