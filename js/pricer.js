@@ -307,7 +307,7 @@ $(function () {
                 .attr("width", w + margin * 2)
                 .attr("height", h + margin * 2)
                 .append("svg:g")
-                .attr("transform", "translate(50,50)")
+                .attr("transform", "translate(50,15)")
                 .attr('class', 'container')
                 .attr('fill-rule', 'nonzero');
 
@@ -368,12 +368,12 @@ $(function () {
             // Add illustration
             var infoBox = graph.append("svg:g")
                 .attr('class', 'infoBox')
-                .attr("transform", "translate(" + (w - 210) + "," + 10 + ")");
+                .attr("transform", "translate(" + (w - 210) + "," + 0 + ")");
             infoBox.append('rect')
                 .attr({
                     stroke: "black",
                     id: "e1_rectangle",
-                    style: "stroke-width:1px;stroke:#aaa;fill:none;",
+                    style: "stroke-width:0px;stroke:#aaa;fill:none;",
                     width: "200",
                     height: "70"
                 });
