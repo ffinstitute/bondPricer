@@ -10,7 +10,7 @@ var pricer = function () {
         var marketRate = +$('#d').val();// D4 - 5%
         var delta = +$('#e').val();// G4 - 0 to 0.3%
 
-        console.info(redeem, maturity, coupon, marketRate, delta);
+        //console.info(redeem, maturity, coupon, marketRate, delta);
 
         //controls
         if (maturity < 1) {
@@ -156,6 +156,8 @@ $(function () {
     var zoom, out;
 
     $('#a,#b,#c,#d,#e').on('change', function () {
+        
+        console.log('#a,#b,#c,#d,#e');
 
         $('#a').val(+$('#a').val());//force num
         if ($('#a').val() < 90)$('#a').val('90.00');
@@ -186,8 +188,14 @@ $(function () {
     $('button#reset-zoom').click(function () {
         refresh(true);
     });
+    
+    var t;
     $(window).resize(function () {
-        refresh(true);
+        clearTimeout(t);
+        t=setTimeout(function(){//less violence
+            refresh(true);    
+        },300);
+        
     });
 
     function refresh(skipCompute) {
@@ -195,7 +203,8 @@ $(function () {
         if (!skipCompute) {
             out = pricer.compute();
         }
-        console.log('change', out);
+        
+        //console.log('change', out);
 
         drawGraph(out);
 
@@ -255,13 +264,14 @@ $(function () {
     refresh();
 
     function drawGraph(out) {
+
         var data0 = out.priceFull;
         var data1 = out.line2;
         var data2 = out.line3;
         // define dimensions of graph
-        var margin = 50; //px
+        var margin = 0; //px
         var w = $('#graphDiv').width() - margin * 2; // width
-        var h = 400 - margin * 2; // height
+        var h = 270 - margin * 2; // height
         var graph;
 
         var xScale, yScale, xAxis, yAxis, lineFunc;
@@ -272,11 +282,12 @@ $(function () {
                 .domain([
                     (parseFloat(getMin(data0.concat(data1), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'x')) + 0.251).toFixed(2)
                 ])
-                .range([0, w]);
+                .range([0, w-50]);
+            
             yScale = d3.scale.linear()
                 .domain([
                     (parseFloat(getMin(data0.concat(data1), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'y')) + 1.1).toFixed(2)])
-                .range([h, 0]);
+                .range([h-40, 0]);
 
             // create/update axes
             xAxis = d3.svg.axis().scale(xScale).ticks(7).orient("bottom");
@@ -296,18 +307,21 @@ $(function () {
                 .interpolate("basis");
         }
 
-        if ($("#graphDiv svg").length == 0) {
-            calAxis();
+        calAxis();
+
+        if ($("#graphDiv svg").length == 0) {// APPEND
+            
+                
             // Create zoom listener
             zoom = d3.behavior.zoom().x(xScale).y(yScale)
                 .scaleExtent([1, 100]).on("zoom", reScale);
 
             // Add an SVG element with the desired dimensions and margin.
             graph = d3.select("#graphDiv").append("svg:svg")
-                .attr("width", w + margin * 2)
-                .attr("height", h + margin * 2)
+                .attr("width", w)
+                .attr("height", h)
                 .append("svg:g")
-                .attr("transform", "translate(50,15)")
+                .attr("transform", "translate(40,10)")
                 .attr('class', 'container')
                 .attr('fill-rule', 'nonzero');
 
@@ -315,8 +329,9 @@ $(function () {
             graph.append("svg:g")
                 .attr({
                     'class': 'x axis',
-                    'transform': 'translate(0,' + h + ')'
+                    'transform': 'translate(0,' + (h-40) + ')'
                 })
+                .style("font-size","12px")
                 .call(xAxis);
 
             graph.append("svg:g")
@@ -324,22 +339,28 @@ $(function () {
                     'class': 'y axis',
                     'transform': 'translate(0,0)'
                 })
+                .style("font-size","12px")
                 .call(yAxis);
 
             // Add axise labels
             graph.append("text")
                 .attr("class", "x label")
+                .attr("fill", "#999999")
                 .attr("text-anchor", "end")
-                .attr("x", w)
-                .attr("y", h - 6)
-                .text("Discount Rate (%)");
+                .attr("x", w - 60)
+                .attr("y", h - 45)
+                .style("font-size", "14px")
+                .text("Discount Rate %");
+
             graph.append("text")
                 .attr("class", "y label")
+                .attr("fill", "#999999")
                 .attr("text-anchor", "end")
                 .attr("y", 6)
                 .attr("dy", ".75em")
                 .attr("transform", "rotate(-90)")
-                .text("Price (%)");
+                .style("font-size", "14px")
+                .text("Price %");
 
             graph.append("svg:g")
                 .attr("class", "lines")
@@ -348,15 +369,15 @@ $(function () {
                 .attr("height", h)
                 .attr("pointer-events", "all")
                 .attr("clip-path", "url(#clip)");
-
+            
             graph.append("clipPath")
                 .attr("id", "clip")
                 .append("rect")
                 .attr("x", 0)
                 .attr("y", 0)
                 .attr("width", w)
-                .attr("height", h);
-
+                .attr("height", h-40);
+            
             // Add drag mask
             graph.append("svg:rect")
                 .attr("class", "pane")
@@ -365,10 +386,12 @@ $(function () {
                 .attr("fill-opacity", 0)
                 .call(zoom);
 
+            
             // Add illustration
             var infoBox = graph.append("svg:g")
                 .attr('class', 'infoBox')
-                .attr("transform", "translate(" + (w - 210) + "," + 0 + ")");
+                .attr("transform", "translate(" + (w - 210) + ",0)");
+            
             infoBox.append('rect')
                 .attr({
                     stroke: "black",
@@ -377,6 +400,7 @@ $(function () {
                     width: "200",
                     height: "70"
                 });
+
             infoBox.append('rect').attr({
                 x: "10",
                 y: "10",
@@ -392,7 +416,7 @@ $(function () {
                 style: "stroke:none",
                 width: "10",
                 height: "10",
-                fill: "#8B0000",
+                fill: "#CC0000",
                 id: "color2"
             });
             infoBox.append('rect').attr({
@@ -430,13 +454,18 @@ $(function () {
                 .attr("y1", yScale(0)).attr("y2", yScale(out.price[1])).attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]))
                 .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'x1 line').attr('stroke-dasharray', '10, 5')
                 .attr('vector-effect', "non-scaling-stroke");
+            
             graph.select('g.lines').append("svg:line")
                 .attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1])).attr("x1", xScale(-3)).attr("x2", xScale(out.rate[1]))
                 .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'y1 line').attr('stroke-dasharray', '10, 5')
                 .attr('vector-effect', "non-scaling-stroke");
-        } else {
-            calAxis();
+        
+        } else { // Update
+            
+            
+
             graph = d3.select("#graphDiv").transition().duration(1000);
+            graph.attr("width",w);
 
             zoom.scale(1).translate([0, 0]).on("zoom", function () {
                 reScale(graph);
@@ -452,21 +481,25 @@ $(function () {
 
             graph.select("line.x1").attr("y1", yScale(0)).attr("y2", yScale(out.price[1]))
                 .attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]));
+            
             graph.select("line.y1").attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1]))
                 .attr("x1", xScale(-3)).attr("x2", xScale(out.rate[1]));
 
             // reposition label texts and hint box
             graph.select(".x.label")
                 .attr({
-                    "x": w,
-                    "y": h - 6
+                    "x": w-60,
+                    "y": h-45
                 });
-            graph.select('.infoBox').attr("transform", "translate(" + (w - 210) + "," + 10 + ")");
-
+            
+            graph.select('.infoBox').attr("transform", "translate(" + (w-210) + ",0)");
 
         }
 
-        function reScale(that_graph) {
+
+        function reScale(that_graph) 
+        {
+            //console.log('reScale(that_graph)');
             if (typeof(that_graph) === "undefined") {
                 that_graph = d3.select("#graphDiv");
             }
@@ -508,10 +541,5 @@ $(function () {
                     (translate[1] > maxY) ? maxY : translate[1];
             return [x, y];
         }
-
     }
-
 });
-
-
-

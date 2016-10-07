@@ -36,146 +36,115 @@
     <input type='hidden' id='student_id'>
 
     <h1>
-        <img src='img/logo_ffi_48px.png' title='First Finance Institute' style="cursor:pointer"> <span id='title'>Bond pricer</span>
+        <a href='https://first-finance.institute' title='First Finance Institute' target=_blank><img src='img/logo_ffi_48px.png' width=32 title='First Finance Institute' style="vertical-align: top"></a> <span id='title'>Bond pricer</span>
     </h1>
-
+    <hr />
 
 
         <div class="col-sm-4">
+         
          <table class='table table-condensed'>
+         
             <thead>
                 <th width=100>Parameters</th>
                 <th></th>
                 <th></th>
             </thead>
             <tbody>
-            
-                <tr><th>Redeem price<td><input type=text class='form-control input-sm right' value='102.54'><td>%
-                <tr><th>Maturity<td><input type=text class='form-control input-sm right' value='5'><td>%
-                <tr><th>Coupon<td><input type=text class='form-control input-sm right' value='6.00'><td>%
-                <tr><th>Market rate<td><input type=text class='form-control input-sm right' value='5.00'><td>%
-                <tr><th>Delta<td><input type=text class='form-control input-sm right' value='0.1'><td>%
-            
+                <tr><th>Redeem price<td><input type=text class='form-control input-sm right' value='102.54' id='a'><td>%
+                <tr><th>Maturity<td><input type=text class='form-control input-sm right' value='5' id='b'><td>%
+                <tr><th>Coupon<td><input type=text class='form-control input-sm right' value='6.00' id='c'><td>%
+                <tr><th>Market rate<td><input type=text class='form-control input-sm right' value='5.00' id='d'><td>%
+                <tr><th>Delta<td><input type=text class='form-control input-sm right' value='0.1' id='e'><td>%
             </tbody>
          </table>
         </div>
 
-        
-        <div class="col-sm-4" style='display:none'>
-            
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">Redeem price</span>
-                <input type="text" class="form-control" placeholder="Remboursement" value='102.54' style='text-align:right' id='a'>
-                <span class="input-group-addon">%</span>
-            </div><!-- /input-group -->
-
-
-        
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">Maturity</span>
-                <input type="number" class="form-control" placeholder="Maturite" value='5' style='text-align:right' id='b'>
-                <span class="input-group-addon">Year</span>
-            </div><!-- /input-group -->
-        
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">Coupon</span>
-                <input type="text" class="form-control" placeholder="Coupon" value='6.00' style='text-align:right' id='c'>
-                <span class="input-group-addon">%</span>
-            </div><!-- /input-group -->
-        
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">Market rate</span>
-                <input type="text" class="form-control" placeholder="Remboursement" value='5.00'
-                       style='text-align:right' id='d'>
-                <span class="input-group-addon">%</span>
-            </div><!-- /input-group -->
-        
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">Delta</span>
-                <input type="text" class="form-control" placeholder="Delta" value='0.1' style='text-align:right' id='e'>
-                <span class="input-group-addon">%</span>
-            </div><!-- /input-group -->
-        </div>
-
     
 
-    <div class="col-sm-8">
-    <table class='table table-condensed table-striped'>
-        <thead>
-        <th>Calculations</th>
-        <th class="right">- delta</th>
-        <th class="right">nominal</th>
-        <th class="right">+ delta</th>
-        </thead>
-        <tbody>
-        <tr id='r1'>
-            <th>Discount rate</th>
-            <td class="right"></td>
-            <td class="right"></td>
-            <td class="right"></td>
-        </tr>
-        <tr id='r2'>
-            <th>Price (P)</th>
-            <td class="right"></td>
-            <td class="right"></td>
-            <td class="right"></td>
-        </tr>
-        <tr id='r3'>
-            <th>Duration</th>
-            <td class="right"></td>
-            <td class="right"></td>
-            <td class="right"></td>
-        </tr>
-        <tr id='r4'>
-            <th>Duration implied price (IP)</th>
-            <td class="right"></td>
-            <td class="right"></td>
-            <td class="right"></td>
-        </tr>
-        <tr id='r5'>
-            <th>Price difference (IP-P)</th>
-            <td class="right"></td>
-            <td class="right"></td>
-            <td class="right"></td>
-        </tr>
-        <tr id='r6'>
-            <th>Modified Duration</th>
-            <td class="right"></td>
-            <td class="right"></td>
-            <td class="right"></td>
-        </tr>
-        <tr id='r7'>
-            <th>Modified Duration Implied Price (MDIP)</th>
-            <td class="right"></td>
-            <td class="right"></td>
-            <td class="right"></td>
-        </tr>
-        <tr id='r8'>
-            <th>Price difference (MDIP-P)</th>
-            <td class="right"></td>
-            <td class="right"></td>
-            <td class="right"></td>
-        </tr>
-        </tbody>
-
-    </table>
-
+    <div class="col-sm-8" id='graphDiv' style='padding:0px'>
+        <!-- graph goes here -->
     </div>
+
 
     <div id='details'></div>
 
+    
     <div class='row'>
         <div class='col-xs-12'>
-            <div id='graphDiv'></div>
+            
+            <!--
                 <button type="button" id="reset-zoom" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i>
                     Reset Zoom
                 </button>
-            
+        -->        
         </div>
     </div>
+    
+    
 
-
-
+<div class='row'>
+        <div class='col-xs-12'>
+            <table class='table table-condensed table-striped'>
+                <thead>
+                <th>Calculations</th>
+                <th class="right">- delta</th>
+                <th class="right">nominal</th>
+                <th class="right">+ delta</th>
+                </thead>
+                <tbody>
+                <tr id='r1'>
+                    <th>Discount rate</th>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                </tr>
+                <tr id='r2'>
+                    <th>Price (P)</th>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                </tr>
+                <tr id='r3'>
+                    <th>Duration</th>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                </tr>
+                <tr id='r4'>
+                    <th>Duration implied price (IP)</th>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                </tr>
+                <tr id='r5'>
+                    <th>Price difference (IP-P)</th>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                </tr>
+                <tr id='r6'>
+                    <th>Modified Duration</th>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                </tr>
+                <tr id='r7'>
+                    <th>Modified Duration Implied Price (MDIP)</th>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                </tr>
+                <tr id='r8'>
+                    <th>Price difference (MDIP-P)</th>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                    <td class="right"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script src='js/tooltip.js'></script>
     <script src='js/pricer.js'></script>
