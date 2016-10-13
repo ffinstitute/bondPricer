@@ -56,20 +56,22 @@ button:focus {
 tbody td, thead th {
     font-size: 12px;
 }
+
 tbody th {
     font-weight: 500;
 }
 
-.right{
+.right {
     text-align: right;
 }
 
-.table>thead>tr>th{
-    line-height: 1!important;
+.table > thead > tr > th {
+    line-height: 1 !important;
 }
-.table-condensed>tbody>tr>td{
+
+.table-condensed > tbody > tr > td {
     vertical-align: middle;
-    line-height: 1!important;
+    line-height: 1 !important;
     /*padding:0px;*/
 }
 
@@ -77,6 +79,33 @@ tbody th {
     font-size: 12px;
 }
 
-svg{
-    background-color:#ffffff;
+svg {
+    background-color: #ffffff;
+}
+
+.input-partial {
+    text-align: right;
+}
+
+.input-partial input {
+    padding-right: 16px;
+    text-align: right;
+}
+
+.input-partial span {
+    margin-left: -16px;
+}
+
+#divParameters input {
+    max-width: 60px;
+    display: inline-block;
+    padding-left: 0;
+}
+
+td.right {
+    vertical-align: middle;
+}
+
+td.right input {
+    margin-right: -4px;
 }
