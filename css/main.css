@@ -109,3 +109,7 @@ td.right {
 td.right input {
     margin-right: -4px;
 }
+
+.table-nowrap th, .table-nowrap td {
+    white-space: nowrap;
+}
