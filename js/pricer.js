@@ -466,6 +466,10 @@ $(function () {
             graph.attr("width", w)
                 .select('svg').attr("width", w);
 
+            graph.select('#clip rect').attr("width", w);
+            graph.select('rect.pane').attr("width", w);
+
+
             zoom.scale(1).translate([0, 0]).on("zoom", function () {
                 reScale(graph);
             });
