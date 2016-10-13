@@ -389,7 +389,7 @@ $(function () {
             // Add illustration
             var infoBox = graph.append("svg:g")
                 .attr('class', 'infoBox')
-                .attr("transform", "translate(" + (w - 210) + ",0)");
+                .attr("transform", "translate(" + (w - 240) + ",0)");
 
             infoBox.append('rect')
                 .attr({
@@ -491,7 +491,7 @@ $(function () {
                     "y": h - 45
                 });
 
-            graph.select('.infoBox').attr("transform", "translate(" + (w - 210) + ",0)");
+            graph.select('.infoBox').attr("transform", "translate(" + (w - 240) + ",0)");
 
         }
 
