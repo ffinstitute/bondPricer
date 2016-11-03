@@ -259,7 +259,7 @@ $(function () {
         // define dimensions of graph
         var margin = 0; //px
         var w = $('#graphDiv').width() - margin * 2; // width
-        var h = 270 - margin * 2; // height
+        var h = 600 - margin * 2; // height
         var graph;
 
         var xScale, yScale, xAxis, yAxis, lineFunc;

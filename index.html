@@ -32,7 +32,7 @@
 </head>
 
 <body>
-<div class='container'>
+<div class='container-fluid'>
 
     <input type='hidden' id='student_id'>
 
@@ -43,71 +43,52 @@
     </h2>
     <hr/>
 
+    <div class="row">
+        <div class="col-xs-4" id="divParameters">
+            <table class='table table-nowrap table-condensed'>
+                <thead>
+                <tr>
+                    <th>Parameters</th>
+                    <th width="100px"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th><label for="a">Redeem price</label></th>
+                    <td class="input-partial">
+                        <input type="text" id="a" class="form-control input-sm" value="102.54"/><span>%</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="b">Maturity</label>
+                    <td class="right">
+                        <input type="text" id="b" class="form-control input-sm right" value="5"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="c">Coupon</label>
+                    <td class="input-partial">
+                        <input type="text" id="c" class="form-control input-sm" value="6.00"/><span>%</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="d">Market rate</label>
+                    <td class="input-partial">
+                        <input type="text" id="d" class="form-control input-sm" value="5.00"/><span>%</span>
+                    </td>
 
-    <div class="col-xs-4" id="divParameters">
-        <table class='table table-condensed'>
-            <thead>
-            <tr>
-                <th>Parameters</th>
-                <th width="100px"></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <th><label for="a">Redeem price</label></th>
-                <td class="input-partial">
-                    <input type="text" id="a" class="form-control input-sm" value="102.54"/><span>%</span>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="b">Maturity</label>
-                <td class="right">
-                    <input type="text" id="b" class="form-control input-sm right" value="5"/>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="c">Coupon</label>
-                <td class="input-partial">
-                    <input type="text" id="c" class="form-control input-sm" value="6.00"/><span>%</span>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="d">Market rate</label>
-                <td class="input-partial">
-                    <input type="text" id="d" class="form-control input-sm" value="5.00"/><span>%</span>
-                </td>
-
-            </tr>
-            <tr>
-                <th><label for="e">Delta</label>
-                <td class="input-partial">
-                    <input type="text" id="e" class="form-control input-sm" value="0.1"/><span>%</span>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-
-    <div class="col-xs-8" id='graphDiv' style='padding:0'>
-        <!-- graph goes here -->
-    </div>
-
-    <div class='row'>
-        <div class='col-xs-12'>
-
-            <!--
-                <button type="button" id="reset-zoom" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i>
-                    Reset Zoom
-                </button>
-        -->
+                </tr>
+                <tr>
+                    <th><label for="e">Delta</label>
+                    <td class="input-partial">
+                        <input type="text" id="e" class="form-control input-sm" value="0.1"/><span>%</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-    </div>
-
-
-    <div class='row'>
-        <div class='col-xs-12'>
-            <table class='table table-nowrap table-condensed table-striped'>
+        <div class='col-xs-8'>
+            <table class='table table-nowrap table-condensed'>
                 <thead>
                 <tr>
                     <th>Calculations</th>
@@ -150,7 +131,13 @@
                 </tbody>
             </table>
         </div>
+
     </div>
+
+    <div class="col-xs-12" id='graphDiv' style='padding:0'>
+        <!-- graph goes here -->
+    </div>
+
 
     <script src='js/tooltip.js'></script>
     <script src='js/pricer.js'></script>
