@@ -8,20 +8,16 @@ td {
 
 path.line1 {
     stroke: #0057A0;
-    stroke-width: 1;
-    fill: none;
-}
-
-path.line2 {
-    stroke: #CC0000;
-    stroke-width: 1;
-    fill: none;
 }
 
 path.line3 {
-    stroke: #40A500;
-    stroke-width: 1;
+    stroke: #CC0000;
+}
+
+path.line {
     fill: none;
+    stroke-width: 1px;
+    shape-rendering: geometricPrecision;
 }
 
 .axis {

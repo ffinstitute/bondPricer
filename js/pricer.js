@@ -30,7 +30,6 @@ var pricer = function () {
             MDImpliedPrice: [],
             MDDeltaPrice: [],
             priceFull: {},
-            line2: {},
             line3: {}
         };
 
@@ -95,13 +94,6 @@ var pricer = function () {
         //delta price
         out.deltaPrice = [out.impliedPrice[0] - price0, out.impliedPrice[1] - price1, out.impliedPrice[2] - price2];
         out.MDDeltaPrice = [out.MDImpliedPrice[0] - price0, out.MDImpliedPrice[1] - price1, out.MDImpliedPrice[2] - price2];
-        // compute line2 for graph
-        out.line2 = $(out.priceFull).map(function () {
-            return {
-                'x': this.x,
-                'y': (out.rate[1] - parseFloat(this.x)) * out.duration[1] + out.price[1]
-            }
-        }).toArray();
 
         // compute line3 for graph
         out.line3 = $(out.priceFull).map(function () {
@@ -254,7 +246,6 @@ $(function () {
     function drawGraph(out) {
 
         var data0 = out.priceFull;
-        var data1 = out.line2;
         var data2 = out.line3;
         // define dimensions of graph
         var margin = 0; //px
@@ -268,13 +259,13 @@ $(function () {
             // Fit scale with data
             xScale = d3.scale.linear()
                 .domain([
-                    (parseFloat(getMin(data0.concat(data1), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'x')) + 0.251).toFixed(2)
+                    (parseFloat(getMin(data0.concat(data2), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data2), 'x')) + 0.251).toFixed(2)
                 ])
                 .range([0, w - 50]);
 
             yScale = d3.scale.linear()
                 .domain([
-                    (parseFloat(getMin(data0.concat(data1), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'y')) + 1.1).toFixed(2)])
+                    (parseFloat(getMin(data0.concat(data2), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data2), 'y')) + 1.1).toFixed(2)])
                 .range([h - 40, 0]);
 
             // create/update axes
@@ -406,15 +397,6 @@ $(function () {
                 fill: "#CC0000",
                 id: "color2"
             });
-            infoBox.append('rect').attr({
-                x: "10",
-                y: "50",
-                style: "stroke:none",
-                width: "10",
-                height: "10",
-                fill: "#40A500",
-                id: "color3"
-            });
 
             infoBox.append('text').attr({
                 fill: "black", x: "25", y: "20", id: "color1-text", style: "font-size:12px;"
@@ -424,16 +406,10 @@ $(function () {
             infoBox.append('text').attr({
                 fill: "black", x: "25", y: "40", id: "color2-text", style: "font-size:12px;"
             })
-                .text('Duration Implied Price');
-
-            infoBox.append('text').attr({
-                fill: "black", x: "25", y: "60", id: "color2-text", style: "font-size:12px;"
-            })
                 .text('Modified Duration Implied Price');
 
             // Add curve
             graph.select('g.lines').append("svg:path").attr("class", "line1 line").attr("d", lineFunc(data0)).attr('vector-effect', "non-scaling-stroke");
-            graph.select('g.lines').append("svg:path").attr("class", "line2 line").attr("d", lineFunc(data1)).attr('vector-effect', "non-scaling-stroke");
             graph.select('g.lines').append("svg:path").attr("class", "line3 line").attr("d", lineFunc(data2)).attr('vector-effect', "non-scaling-stroke");
 
             // Add lines
@@ -466,7 +442,6 @@ $(function () {
             zoom.on("zoom", reScale);
 
             graph.select('path.line1').attr("d", lineFunc(data0));
-            graph.select('path.line2').attr("d", lineFunc(data1));
             graph.select('path.line3').attr("d", lineFunc(data2));
 
 
