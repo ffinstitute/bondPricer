@@ -28,7 +28,7 @@ var pricer = function () {
             MDImpliedPrice: [],
             MDDeltaPrice: [],
             priceFull: {},
-            line3: {}
+            line2: {}
         };
 
         // Compute for graph
@@ -89,15 +89,14 @@ var pricer = function () {
 
         out.MDDeltaPrice = [out.MDImpliedPrice[0] - price0, out.MDImpliedPrice[1] - price1, out.MDImpliedPrice[2] - price2];
 
-        // compute line3 for graph
-        out.line3 = $(out.priceFull).map(function () {
+        // compute line2 for graph
+        out.line2 = $(out.priceFull).map(function () {
             return {
                 'x': this.x,
                 'y': (out.rate[1] - parseFloat(this.x)) * out.modifiedDuration[1] + out.price[1]
             }
         }).toArray();
 
-        //ktksbye
         return out;
     }
 
@@ -106,7 +105,7 @@ var pricer = function () {
         var marketRate = 0;
         while (marketRate <= maxMarketRate) {
             result[marketRate] = Math.round((1 / Math.pow((1 + ((marketRate) / 100)), year)) * 1e6) / 1e6;
-            marketRate = Math.round((marketRate + 1) * 1e2) / 1e2;
+            marketRate = Math.round((marketRate + 0.005) * 1e3) / 1e3;
         }
         return result
     }
@@ -140,8 +139,6 @@ $(function () {
     var zoom, out;
 
     $('#a,#b,#c,#d,#e').on('change', function () {
-
-        console.log('#a,#b,#c,#d,#e');
 
         $('#a').val(+$('#a').val());//force num
         if ($('#a').val() < 90)$('#a').val('90.00');
@@ -186,6 +183,7 @@ $(function () {
 
         if (!skipCompute) {
             out = pricer.compute();
+            console.log(out);
         }
 
         //console.log('change', out);
@@ -237,7 +235,7 @@ $(function () {
     function drawGraph(out) {
 
         var data0 = out.priceFull;
-        var data2 = out.line3;
+        var data2 = out.line2;
         // define dimensions of graph
         var margin = 0; //px
         var w = $('#graphDiv').width() - margin * 2; // width
@@ -274,7 +272,7 @@ $(function () {
                     // return the Y coordinate where we want to plot this datapoint
                     return yScale(d.y);
                 })
-                .interpolate("basis");
+                .interpolate("cardinal");
         }
 
         calAxis();
@@ -354,7 +352,6 @@ $(function () {
                 .attr("fill-opacity", 0)
                 .call(zoom);
 
-
             // Add illustration
             var infoBox = graph.append("svg:g")
                 .attr('class', 'infoBox')
@@ -400,7 +397,7 @@ $(function () {
 
             // Add curve
             graph.select('g.lines').append("svg:path").attr("class", "line1 line").attr("d", lineFunc(data0)).attr('vector-effect', "non-scaling-stroke");
-            graph.select('g.lines').append("svg:path").attr("class", "line3 line").attr("d", lineFunc(data2)).attr('vector-effect', "non-scaling-stroke");
+            graph.select('g.lines').append("svg:path").attr("class", "line2 line").attr("d", lineFunc(data2)).attr('vector-effect', "non-scaling-stroke");
 
             // Add lines
             graph.select('g.lines').append("svg:line")
@@ -432,7 +429,7 @@ $(function () {
             zoom.on("zoom", reScale);
 
             graph.select('path.line1').attr("d", lineFunc(data0));
-            graph.select('path.line3').attr("d", lineFunc(data2));
+            graph.select('path.line2').attr("d", lineFunc(data2));
 
 
             graph.select("line.x1").attr("y1", yScale(0)).attr("y2", yScale(out.price[1]))
