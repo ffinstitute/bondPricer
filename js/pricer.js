@@ -236,7 +236,7 @@ $(function () {
     function drawGraph(out) {
 
         var data0 = out.priceFull;
-        var data2 = out.line2;
+        var data1 = out.line2;
         // define dimensions of graph
         var margin = 0; //px
         var w = $('#graphDiv').width() - margin * 2; // width
@@ -249,13 +249,13 @@ $(function () {
             // Fit scale with data
             xScale = d3.scale.linear()
                 .domain([
-                    (parseFloat(getMin(data0.concat(data2), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data2), 'x')) + 0.251).toFixed(2)
+                    (parseFloat(getMin(data0.concat(data1), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'x')) + 0.251).toFixed(2)
                 ])
                 .range([0, w - 52]);
 
             yScale = d3.scale.linear()
                 .domain([
-                    (parseFloat(getMin(data0.concat(data2), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data2), 'y')) + 1.1).toFixed(2)])
+                    (parseFloat(getMin(data0.concat(data1), 'y')) - 1.1).toFixed(2), (parseFloat(getMax(data0.concat(data1), 'y')) + 1.1).toFixed(2)])
                 .range([h - 40, 0]);
 
             // create/update axes
@@ -406,7 +406,7 @@ $(function () {
 
             // Add curve
             graph.select('g.lines').append("svg:path").attr("class", "line1 line").attr("d", lineFunc(data0)).attr('vector-effect', "non-scaling-stroke");
-            graph.select('g.lines').append("svg:path").attr("class", "line2 line").attr("d", lineFunc(data2)).attr('vector-effect', "non-scaling-stroke");
+            graph.select('g.lines').append("svg:path").attr("class", "line2 line").attr("d", lineFunc(data1)).attr('vector-effect', "non-scaling-stroke");
 
             // Add lines
             graph.select('g.lines').append("svg:line")
@@ -438,7 +438,7 @@ $(function () {
             zoom.on("zoom", reScale);
 
             graph.select('path.line1').attr("d", lineFunc(data0));
-            graph.select('path.line2').attr("d", lineFunc(data2));
+            graph.select('path.line2').attr("d", lineFunc(data1));
 
 
             graph.select("line.x1").attr("y1", yScale(0)).attr("y2", yScale(out.price[1]))
@@ -493,10 +493,13 @@ $(function () {
         }
 
         function panLimited(translate, scale) {
-            var minX = Number(-w * scale).toFixed(2),
-                maxX = Number(w).toFixed(2),
-                minY = Number(-h * scale).toFixed(2),
-                maxY = Number(h).toFixed(2);
+            var minX = Math.round((59 - Number(w) ) * (scale - 1) * 1e2) / 1e2,
+                maxX = Math.round(7 * (1 - scale) * 1e2) / 1e2,
+                minY = Math.round((Number(h) - 44) * (1 - scale) * 1e2) / 1e2,
+                maxY = Math.round(((1 - scale) * 4) * 1e2) / 1e2;
+
+            console.log(translate, scale);
+
             var x = (translate[0] < minX) ? minX :
                     (translate[0] > maxX) ? maxX : translate[0],
                 y = (translate[1] < minY) ? minY :
@@ -506,18 +509,14 @@ $(function () {
 
         function tickValues(required_value) {
             required_value = parseFloat(required_value);
-
             var candidates = xScale.ticks(10);
-
-            var interval = (candidates[1] - candidates[0]) / 2;
+            var interval = Math.round((candidates[1] - candidates[0]) / 2 * 1e2) / 1e2;
 
             candidates = candidates.filter(function (d) {
                 return Math.abs(d - required_value) >= interval;
             });
 
             candidates.push(required_value);
-
-            console.log(interval);
             return candidates;
         }
     }
