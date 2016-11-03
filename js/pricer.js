@@ -235,18 +235,6 @@ $(function () {
         $('#r2').find('td').eq(1).html(round2(out.price[1]) + " %");
         $('#r2').find('td').eq(2).html(round2(out.price[2]) + " %");
         // Duration
-        $('#r3').find('td').eq(0).html(round4(out.duration[0]));
-        $('#r3').find('td').eq(1).html(round4(out.duration[1]));
-        $('#r3').find('td').eq(2).html(round4(out.duration[2]));
-        // Prix induit par duration
-        $('#r4').find('td').eq(0).html(round2(out.impliedPrice[0]) + " %");
-        $('#r4').find('td').eq(1).html(round2(out.impliedPrice[1]) + " %");
-        $('#r4').find('td').eq(2).html(round2(out.impliedPrice[2]) + " %");
-        // Delta price
-        $('#r5').find('td').eq(0).html(round4(out.deltaPrice[0]) + " %");
-        $('#r5').find('td').eq(1).html(round4(out.deltaPrice[1]) + " %");
-        $('#r5').find('td').eq(2).html(round4(out.deltaPrice[2]) + " %");
-        // Duration
         $('#r6').find('td').eq(0).html(round4(out.modifiedDuration[0]));
         $('#r6').find('td').eq(1).html(round4(out.modifiedDuration[1]));
         $('#r6').find('td').eq(2).html(round4(out.modifiedDuration[2]));
