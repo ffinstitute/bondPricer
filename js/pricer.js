@@ -184,10 +184,7 @@ $(function () {
 
         if (!skipCompute) {
             out = pricer.compute();
-            console.log(out);
         }
-
-        //console.log('change', out);
 
         drawGraph(out);
 
@@ -503,8 +500,6 @@ $(function () {
                 maxX = Math.round(5 * (1 - scale) * 1e2) / 1e2,
                 minY = Math.round((Number(h) - 44) * (1 - scale) * 1e2) / 1e2,
                 maxY = Math.round(((1 - scale) * 4) * 1e2) / 1e2;
-
-            console.log(translate, scale);
 
             var x = (translate[0] < minX) ? minX :
                     (translate[0] > maxX) ? maxX : translate[0],
