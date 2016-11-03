@@ -28,7 +28,8 @@ var pricer = function () {
             MDImpliedPrice: [],
             MDDeltaPrice: [],
             priceFull: {},
-            line2: {}
+            line2: {},
+            marketRate: marketRate
         };
 
         // Compute for graph
@@ -250,7 +251,7 @@ $(function () {
                 .domain([
                     (parseFloat(getMin(data0.concat(data2), 'x')) - 0.251).toFixed(2), (parseFloat(getMax(data0.concat(data2), 'x')) + 0.251).toFixed(2)
                 ])
-                .range([0, w - 50]);
+                .range([0, w - 52]);
 
             yScale = d3.scale.linear()
                 .domain([
@@ -258,7 +259,15 @@ $(function () {
                 .range([h - 40, 0]);
 
             // create/update axes
-            xAxis = d3.svg.axis().scale(xScale).ticks(7).orient("bottom");
+            xAxis = d3.svg.axis().scale(xScale).tickFormat(function (d) {
+                d = Math.round(d * 1e2) / 1e2;
+                if (d == out.marketRate) {
+                    return d + "(MR)";
+                }
+                return d;
+            })
+                .tickValues(tickValues.bind(this)(out.marketRate))
+                .orient("bottom");
             yAxis = d3.svg.axis().scale(yScale).ticks(10).orient("left");
 
             // create a line function that can convert data[] into x and y points
@@ -449,9 +458,7 @@ $(function () {
 
         }
 
-
         function reScale(that_graph) {
-            //console.log('reScale(that_graph)');
             if (typeof(that_graph) === "undefined") {
                 that_graph = d3.select("#graphDiv");
             }
@@ -459,6 +466,9 @@ $(function () {
             var limitfiedPan = panLimited(d3.event.translate, d3.event.scale);
             zoom.translate(limitfiedPan);
             that_graph.selectAll('.line').attr("transform", "translate(" + limitfiedPan + ") scale(" + d3.event.scale + ")");
+
+            xAxis.tickValues(tickValues(out.marketRate, out.line2));
+
             that_graph.select(".x.axis").call(xAxis);
             that_graph.select(".y.axis").call(yAxis);
 
@@ -492,6 +502,23 @@ $(function () {
                 y = (translate[1] < minY) ? minY :
                     (translate[1] > maxY) ? maxY : translate[1];
             return [x, y];
+        }
+
+        function tickValues(required_value) {
+            required_value = parseFloat(required_value);
+
+            var candidates = xScale.ticks(10);
+
+            var interval = (candidates[1] - candidates[0]) / 2;
+
+            candidates = candidates.filter(function (d) {
+                return Math.abs(d - required_value) >= interval;
+            });
+
+            candidates.push(required_value);
+
+            console.log(interval);
+            return candidates;
         }
     }
 });
