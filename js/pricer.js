@@ -24,8 +24,6 @@ var pricer = function () {
             rate: [marketRate - delta, marketRate, marketRate + delta],
             price: [],
             duration: [],
-            impliedPrice: [],
-            deltaPrice: [],
             modifiedDuration: [],
             MDImpliedPrice: [],
             MDDeltaPrice: [],
@@ -44,7 +42,7 @@ var pricer = function () {
             var nominal = 1 / Math.pow((1 + (marketRate / 100)), j);
             var plus = 1 / Math.pow((1 + ((marketRate + delta) / 100)), j);//1/((1+((marketRate+delta)/100))*j);
             out.df[year] = [minus, nominal, plus];
-            dfFull[year] = computeFullDF(marketRate, 1.5, j);
+            dfFull[year] = computeFullDF(20, j);
         }
 
 
@@ -85,14 +83,10 @@ var pricer = function () {
             out.duration[2] / (1 + out.rate[2] / 100)
         ];
 
-        //implied price
-        out.impliedPrice = [price1 + d1 / price1 * delta, price1, price1 - d1 / price1 * delta];
 
         // modified duration implied price
         out.MDImpliedPrice = [price1 + out.modifiedDuration[1] * delta, price1, price1 - out.modifiedDuration[1] * delta];
 
-        //delta price
-        out.deltaPrice = [out.impliedPrice[0] - price0, out.impliedPrice[1] - price1, out.impliedPrice[2] - price2];
         out.MDDeltaPrice = [out.MDImpliedPrice[0] - price0, out.MDImpliedPrice[1] - price1, out.MDImpliedPrice[2] - price2];
 
         // compute line3 for graph
@@ -107,14 +101,12 @@ var pricer = function () {
         return out;
     }
 
-    function computeFullDF(marketRate, delta, year) {
-        var marketRateB, result = {};
-        var d = -delta;
-        while (d <= delta) {
-            d = (marketRate + d) < 0 ? -marketRate : d;
-            marketRateB = marketRate + d;
-            result[marketRateB] = Math.round((1 / Math.pow((1 + ((marketRateB) / 100)), year)) * 1e6) / 1e6;
-            d = Math.round((d + 0.001) * 1e3) / 1e3;
+    function computeFullDF(maxMarketRate, year) {
+        var result = {};
+        var marketRate = 0;
+        while (marketRate <= maxMarketRate) {
+            result[marketRate] = Math.round((1 / Math.pow((1 + ((marketRate) / 100)), year)) * 1e6) / 1e6;
+            marketRate = Math.round((marketRate + 1) * 1e2) / 1e2;
         }
         return result
     }
@@ -227,18 +219,17 @@ $(function () {
         $('#r2').find('td').eq(1).html(round2(out.price[1]) + " %");
         $('#r2').find('td').eq(2).html(round2(out.price[2]) + " %");
         // Duration
-        $('#r6').find('td').eq(0).html(round4(out.modifiedDuration[0]));
-        $('#r6').find('td').eq(1).html(round4(out.modifiedDuration[1]));
-        $('#r6').find('td').eq(2).html(round4(out.modifiedDuration[2]));
+        $('#r3').find('td').eq(0).html(round4(out.modifiedDuration[0]));
+        $('#r3').find('td').eq(1).html(round4(out.modifiedDuration[1]));
+        $('#r3').find('td').eq(2).html(round4(out.modifiedDuration[2]));
         // Prix induit par duration
-        $('#r7').find('td').eq(0).html(round2(out.MDImpliedPrice[0]) + " %");
-        $('#r7').find('td').eq(1).html(round2(out.MDImpliedPrice[1]) + " %");
-        $('#r7').find('td').eq(2).html(round2(out.MDImpliedPrice[2]) + " %");
+        $('#r4').find('td').eq(0).html(round2(out.MDImpliedPrice[0]) + " %");
+        $('#r4').find('td').eq(1).html(round2(out.MDImpliedPrice[1]) + " %");
+        $('#r4').find('td').eq(2).html(round2(out.MDImpliedPrice[2]) + " %");
         // Delta price
-        $('#r8').find('td').eq(0).html(round4(out.MDDeltaPrice[0]) + " %");
-        $('#r8').find('td').eq(1).html(round4(out.MDDeltaPrice[1]) + " %");
-        $('#r8').find('td').eq(2).html(round4(out.MDDeltaPrice[2]) + " %");
-
+        $('#r5').find('td').eq(0).html(round4(out.MDDeltaPrice[0]) + " %");
+        $('#r5').find('td').eq(1).html(round4(out.MDDeltaPrice[1]) + " %");
+        $('#r5').find('td').eq(2).html(round4(out.MDDeltaPrice[2]) + " %");
     }
 
     refresh();
@@ -290,7 +281,6 @@ $(function () {
 
         if ($("#graphDiv svg").length == 0) {// APPEND
 
-
             // Create zoom listener
             zoom = d3.behavior.zoom().x(xScale).y(yScale)
                 .scaleExtent([1, 100]).on("zoom", reScale);
@@ -328,7 +318,7 @@ $(function () {
                 .attr("x", w - 60)
                 .attr("y", h - 45)
                 .style("font-size", "14px")
-                .text("Discount Rate %");
+                .text("Market Rate %");
 
             graph.append("text")
                 .attr("class", "y label")
