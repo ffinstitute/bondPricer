@@ -410,7 +410,9 @@ $(function () {
 
             // Add lines
             graph.select('g.lines').append("svg:line")
-                .attr("y1", yScale(0)).attr("y2", yScale(out.price[1])).attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]))
+                .attr("y1", yScale(d3.min([0, d3.min(data0.concat(data1), function (d) {
+                    return d.y;
+                })]))).attr("y2", yScale(out.price[1])).attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]))
                 .attr("stroke", "#555").attr("stroke-width", "1").attr('class', 'x1 line').attr('stroke-dasharray', '10, 5')
                 .attr('vector-effect', "non-scaling-stroke");
 
@@ -441,7 +443,11 @@ $(function () {
             graph.select('path.line2').attr("d", lineFunc(data1));
 
 
-            graph.select("line.x1").attr("y1", yScale(0)).attr("y2", yScale(out.price[1]))
+            graph.select("line.x1")
+                .attr("y1", yScale(d3.min([0, d3.min(data0.concat(data1), function (d) {
+                    return d.y;
+                })])))
+                .attr("y2", yScale(out.price[1]))
                 .attr("x1", xScale(out.rate[1])).attr("x2", xScale(out.rate[1]));
 
             graph.select("line.y1").attr("y1", yScale(out.price[1])).attr("y2", yScale(out.price[1]))
@@ -493,8 +499,8 @@ $(function () {
         }
 
         function panLimited(translate, scale) {
-            var minX = Math.round((59 - Number(w) ) * (scale - 1) * 1e2) / 1e2,
-                maxX = Math.round(7 * (1 - scale) * 1e2) / 1e2,
+            var minX = Math.round((57 - Number(w) ) * (scale - 1) * 1e2) / 1e2,
+                maxX = Math.round(5 * (1 - scale) * 1e2) / 1e2,
                 minY = Math.round((Number(h) - 44) * (1 - scale) * 1e2) / 1e2,
                 maxY = Math.round(((1 - scale) * 4) * 1e2) / 1e2;
 
